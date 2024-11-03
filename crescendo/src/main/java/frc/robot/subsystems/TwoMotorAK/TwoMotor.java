@@ -96,7 +96,7 @@ public class TwoMotor extends SubsystemBase {
 /*Gets the postion of the wheel and wraps it form 0 - 2PI */
   public double getPosition0_360() {
     /*Divide the motor reading and out puts the remander */
-    double wheelAngle = Units.rotationsToRadians(inputs.positionRad % (2*Math.PI));
+    double wheelAngle = inputs.positionRad % (2*Math.PI);
   
     /*Adds 2PI to make reading from 0 - 2PI*/
       if (wheelAngle < 0.0){

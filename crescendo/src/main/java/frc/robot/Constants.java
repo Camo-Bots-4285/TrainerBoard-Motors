@@ -91,6 +91,7 @@ import frc.robot.RobotContainer;
 
   }
 
+  
   public static class IntakeConstants {
     /*
      * These numbers must match the Spark connecting to this motor.

@@ -29,7 +29,7 @@ import frc.robot.Constants.SingleMotorConstants;
  * NOTE: To use the Spark Flex / NEO Vortex, replace all instances of "CANSparkMax" with
  * "CANSparkFlex".
  */
-public class SingleMotorReal implements SingleMotorIO {
+public class SingleMotorIOReal implements SingleMotorIO {
 
 
   private final CANSparkMax SingleMotor = new CANSparkMax(SingleMotorConstants.SINGLE_MOTOR, MotorType.kBrushless);
@@ -43,7 +43,7 @@ public class SingleMotorReal implements SingleMotorIO {
   // private final RelativeEncoder encoder = SingleMotor.getEncoder();
   // private final SparkPIDController pid = SingleMotor.getPIDController();
 
-  public SingleMotorReal() {
+  public SingleMotorIOReal() {
     
     SingleMotor.restoreFactoryDefaults();
     SingleMotor.setCANTimeout(250);

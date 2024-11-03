@@ -26,7 +26,7 @@ import edu.wpi.first.math.util.Units;
 import frc.robot.Constants.SingleMotorConstants;
 
 /*this is for a talan fx controlr falcon/talon*/
-public class SingleMotorReal2 implements SingleMotorIO {
+public class SingleMotorIOReal2 implements SingleMotorIO {
   
 
   private final TalonFX SingleMotor = new TalonFX(SingleMotorConstants.SINGLE_MOTOR);
@@ -37,7 +37,7 @@ public class SingleMotorReal2 implements SingleMotorIO {
   private final StatusSignal<Double> SingleMotorCurrent = SingleMotor.getSupplyCurrent();
 
 
-  public SingleMotorReal2() {
+  public SingleMotorIOReal2() {
     var config = new TalonFXConfiguration();
     config.CurrentLimits.SupplyCurrentLimit = SingleMotorConstants.MAX_AMPS;
     config.CurrentLimits.SupplyCurrentLimitEnable = true;
