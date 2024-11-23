@@ -7,10 +7,10 @@ This will serves as an overall view of coding standards and what each subsystem 
 
     Marking: This will hello people find information or what is not finish
 
-        NOTE: {a bunch of writing}
+        //NOTE: {a bunch of writing}
             Will explain an exception or something to consider when using the following code
         
-        TODO - (a bunch of writing)
+        //TODO - (a bunch of writing)
             Make a note that something is not finished and need improvements 
 
         /* (a bunch of writing) */
@@ -22,7 +22,7 @@ This will serves as an overall view of coding standards and what each subsystem 
         */
             Should be found on the top of every subsystem or command and explain what it does
 
-        CO - (a bunch of writing)
+        //CO - (a bunch of writing)
             Explain why something was commented out
 
        

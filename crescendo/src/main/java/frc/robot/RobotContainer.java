@@ -11,6 +11,7 @@ import frc.robot.commands.SingleMotorAKCommands.*;
 
 import frc.robot.subsystems.*;
 import frc.robot.subsystems.SingleMotorAK.*;
+import frc.robot.subsystems.TwoMotorAK.*;
 import frc.robot.Constants.*;
 
 import java.util.function.BiFunction;
@@ -44,8 +45,9 @@ public class RobotContainer {
   // The robot's subsystems and commands are defined here...
 
   // do not uncomment public static ArmPivotSubsystem m_armPivotSubsystem = new ArmPivotSubsystem(m_swerveBase);
-  public static IntakeSubsystem m_intake = new IntakeSubsystem();
+
   public static SingleMotor m_single_motor = new SingleMotor(null);
+  public static TwoMotor m_two_motor = new TwoMotor(null);
 
   
  
