@@ -27,7 +27,7 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class TwoMotor extends SubsystemBase {
-  private final TwoMotorIO io;
+  private final TwoMotorIO twoMotorIO;
   private final TwoMotorIOInputsAutoLogged inputs = new TwoMotorIOInputsAutoLogged();
   private final SimpleMotorFeedforward ffModel;
   private final SysIdRoutine sysId;
@@ -38,7 +38,7 @@ public class TwoMotor extends SubsystemBase {
 
   /** Creates a new TwoMotor. */
   public TwoMotor(TwoMotorIO io) {
-    this.io = io;
+   this.twoMotorIO = io;
 
     // Switch constants based on mode (the physics simulator is treated as a
     // separate robot with different tuning)
@@ -70,19 +70,19 @@ public class TwoMotor extends SubsystemBase {
 
   @Override
   public void periodic() {
-    io.updateInputs(inputs);
+    twoMotorIO.updateInputs(inputs);
     Logger.processInputs("TwoMotor", inputs);
   }
 
   /** Run open loop at the specified voltage. */
   public void runVolts(double volts) {
-    io.setVoltage(volts);
+    twoMotorIO.setVoltage(volts);
   }
 
   /** Run closed loop at the specified velocity. */
   public void runVelocity(double velocityRPM) {
     var velocityRadPerSec = Units.rotationsPerMinuteToRadiansPerSecond(velocityRPM);
-    io.setVelocity(velocityRadPerSec, ffModel.calculate(velocityRadPerSec));
+    twoMotorIO.setVelocity(velocityRadPerSec, ffModel.calculate(velocityRadPerSec));
 
     // Log TwoMotor setpoint
     Logger.recordOutput("TwoMotor/SetpointRPM", velocityRPM);
@@ -90,7 +90,7 @@ public class TwoMotor extends SubsystemBase {
 
   /** Stops the TwoMotor. */
   public void stop() {
-    io.stop();
+    twoMotorIO.stop();
   }
 
 /*Gets the postion of the wheel and wraps it form 0 - 2PI */
@@ -123,7 +123,7 @@ public class TwoMotor extends SubsystemBase {
     * Note there is more advance way of moveing and mechanisum
    */
   double setvoltage = TwoMotorConstants.PID_Positon_TWO_Motor.calculate(PosWarp,0);
-    io.setVoltage(setvoltage);
+    twoMotorIO.setVoltage(setvoltage);
 
     /*Logs Values to help problme solve if something oes wrong */
     Logger.recordOutput("TwoMotor/PositionSetOffset", positionDeg);

@@ -34,9 +34,9 @@ import frc.robot.Constants.SingleMotorConstants;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
-public class SingleMotor extends SubsystemBase {
+  public class SingleMotor extends SubsystemBase {
   public static int SINGLE_MOTOR;
-private final SingleMotorIO io;
+  private final SingleMotorIO singleMotorIO;
   private final SingleMotorIOInputsAutoLogged inputs = new SingleMotorIOInputsAutoLogged();
   private final SimpleMotorFeedforward ffModel;
   private final SysIdRoutine sysId;
@@ -47,7 +47,7 @@ private final SingleMotorIO io;
 
   /** Creates a new SingleMotor. */
   public SingleMotor(SingleMotorIO io) {
-    this.io = io;
+   this.singleMotorIO = io;
 
     // Switch constants based on mode (the physics simulator is treated as a
     // separate robot with different tuning)
@@ -55,11 +55,11 @@ private final SingleMotorIO io;
       case REAL:
       case REPLAY:
         ffModel = new SimpleMotorFeedforward(0.1, 0.05);
-        io.configurePID(1.0, 0.0, 0.0);
+        singleMotorIO.configurePID(1.0, 0.0, 0.0);
         break;
       case SIM:
         ffModel = new SimpleMotorFeedforward(0.0, 0.03);
-        io.configurePID(0.5, 0.0, 0.0);
+        singleMotorIO.configurePID(0.5, 0.0, 0.0);
         break;
       default:
         ffModel = new SimpleMotorFeedforward(0.0, 0.0);
@@ -80,7 +80,7 @@ private final SingleMotorIO io;
   @Override
   public void periodic() {
     /*Standerd Advantage Kit Code to log */
-    io.updateInputs(inputs);
+    singleMotorIO.updateInputs(inputs);
     Logger.processInputs("SingleMotor", inputs);
     
     /*Log SingleMotor setpoint*/
@@ -92,13 +92,13 @@ private final SingleMotorIO io;
 
   /** Run open loop at the specified voltage. */
   public void runVolts(double volts) {
-    io.setVoltage(volts);
+    singleMotorIO.setVoltage(volts);
   }
 
   /** Run closed loop at the specified velocity. */
   public void runVelocity(double velocityRPM) {
     var velocityRadPerSec = Units.rotationsPerMinuteToRadiansPerSecond(velocityRPM);
-    io.setVelocity(velocityRadPerSec, ffModel.calculate(velocityRadPerSec));
+    singleMotorIO.setVelocity(velocityRadPerSec, ffModel.calculate(velocityRadPerSec));
 
     // Log SingleMotor setpoint
     Logger.recordOutput("SingleMotor/SetpointRPM", velocityRPM);
@@ -106,7 +106,7 @@ private final SingleMotorIO io;
 
   /** Stops the SingleMotor. */
   public void stop() {
-    io.stop();
+    singleMotorIO.stop();
   }
 
   /*Gets the postion of the wheel and wraps it form 0 - 2PI */
@@ -141,7 +141,7 @@ private final SingleMotorIO io;
     * Note there is more advance way of moveing and mechanisum
    */
   double setvoltage = SingleMotorConstants.PID_Positon_Single_Motor.calculate(PosWarp,0);
-    io.setVoltage(setvoltage);
+    singleMotorIO.setVoltage(setvoltage);
 
     /*Logs Values to help problme solve if something oes wrong */
     Logger.recordOutput("SingleMotor/PositionSetOffset", positionDeg);
