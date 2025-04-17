@@ -1,0 +1,75 @@
+This utility class tries to make coding motors easier how ever it adds complexity
+If not used correctly or not double check before season it can be worse
+
+To use this utility class go to the subsytem and write  public final Rev_(Type of Motor) = new Rev_(Type of Motor)(Allcondtion it needs)
+
+Example public final REV_Vortex_Flex Leader = new REV_Vortex_Flex(All condition it need)
+
+The condition you must put in can be place derectly of in the constant folder here is a break down of what you need just copy and paste
+this into a new constants class
+
+    /*Motor location */
+    public static final String CANLoop = "rio";// Idenify which CAN loop motor is on
+    public static final String MotorIdentification = "PlaceHolderName";//Change this to a helpful identification name
+
+    public static final int[] MotorSpecifics ={
+    1, //0 IdenMotor ID
+   (Integer) null, //1 Static current limit leave as (Double) null to leave as default
+   (Integer) null  //2 Emergency current limit leave as (Double) null to leave as default
+    };
+
+    /* Motion Tracking Constants*/
+    public static final double[] PhysicalCharacteristics = {//Start counting at zero and every number after that is positive plus one
+      0, //0  Gear Ratio
+      0, //1  Wheel Radius [meters]
+      10, //2 Time in seconds till disbled state changes 
+      (Double)null//3 Tempurature OverHeat Warning will call
+    }; 
+
+    public static final boolean[] MotorStates = {//Start counting at zero and every number after that is positive plus one
+      //Break mode is true 
+      true, //0  Active Motor State
+      false, //1 Invert Motor
+
+    }; 
+
+
+    public static final double[] TunnerValues = {
+      0, //0  Position PID kP
+      0, //1  Position PID kI
+      0, //2  Position PID kD
+      0, //3  Position FF  kV
+      0, //4  Position iZone
+      0, //5  Position iMaxAccumulation
+      0, //6  Position OutPut Min
+      0, //7  Position OutPut Max
+
+
+      0, //8  Velocity PID kP
+      0, //9  Velocity PID kI
+      0, //10  Velocity PID kD
+      0, //11  Velocity FF  kV
+      0, //12  Velocity iZone
+      0, //13  Velocity iMaxAccumulation
+      0, //14  Velocity OutPut Min
+      0, //15  Velocity OutPut Max
+
+      0, //16  Velocity PID kP
+      0, //17  Velocity PID kI
+      0, //18  Velocity PID kD
+      0, //19  Velocity FF  kV
+      0, //20  Velocity iZone
+      0, //21  Velocity iMaxAccumulation
+      0, //22  Velocity OutPut Min
+      0, //23  Velocity OutPut Max
+ 
+    };
+
+    public static final double[] MotionConstants = {
+      0, //0 max Velocity
+      0, //1 max Acceleration
+      0, //2 allowed Closed Loop Error
+    };
+
+
+    After filling in values you will use these in the subsystem just call the classname.(what you are trying to call) the contructor will ask for the correct thing.
