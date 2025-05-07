@@ -30,11 +30,10 @@ public class CTRE_Subsytem extends SubsystemBase {
 //     true
 //     );
 
+    //      @Override
+    // public void periodic() {
     
-//     @Override
-//     public void periodic() {
-    
-//         Logger.recordOutput("Flywheel/Setpoint", 0);
-//     }
+    //      Logger.recordOutput("Flywheel/Setpoint", 0);
+    // }
 
 }

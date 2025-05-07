@@ -30,7 +30,7 @@ public class Solenoid_Double extends SubsystemBase {//https://docs.wpilib.org/en
 
             
     public void setSoleniodPosition(boolean extended){
-        if(extended=true){
+        if(extended==true){
         m_doubleSolenoid.set(DoubleSolenoid.Value.kForward);
         }
         else{

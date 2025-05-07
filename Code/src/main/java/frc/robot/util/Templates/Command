@@ -1,0 +1,76 @@
+package frc.robot.commands;
+
+import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.subsystems.TemplateSubsystem;
+
+/**
+ * TemplateCommand
+ * 
+ * Description:
+ * This is a general-purpose command template designed to interact with a given subsystem.
+ * Extend and modify this class to create custom command logic for your robot.
+ *
+ * Features:
+ * - Initializes, runs, and ends with built-in WPILib lifecycle methods.
+ * - Clean structure to plug into the CommandScheduler.
+ * 
+ * Usage:
+ * - Replace `TemplateSubsystem` with your actual subsystem class.
+ * - Implement logic in `initialize()`, `execute()`, and `end()` as needed.
+ */
+public class TemplateCommand extends Command {
+  
+  private final TemplateSubsystem m_subsystem;
+
+  /**
+   * Creates a new TemplateCommand.
+   * 
+   * @param subsystem The subsystem used by this command.
+   */
+  public TemplateCommand(TemplateSubsystem subsystem) {
+    this.m_subsystem = subsystem;
+
+    // Use addRequirements() here to declare subsystem dependencies.
+    addRequirements(subsystem);
+  }
+
+  /**
+   * Called once when the command is initially scheduled.
+   * Use this to reset sensors, start timers, or send a command to a motor.
+   */
+  @Override
+  public void initialize() {
+    // Example: m_subsystem.resetEncoder();
+  }
+
+  /**
+   * Called every time the scheduler runs while the command is scheduled.
+   * Put your main command logic here.
+   */
+  @Override
+  public void execute() {
+    // Example: m_subsystem.setMotorSpeed(0.5);
+  }
+
+  /**
+   * Called once the command ends or is interrupted.
+   * Stop motors, end timers, or perform cleanup here.
+   * 
+   * @param interrupted True if the command was interrupted/cancelled.
+   */
+  @Override
+  public void end(boolean interrupted) {
+    // Example: m_subsystem.stopMotor();
+  }
+
+  /**
+   * Called repeatedly by the scheduler to determine whether this command is finished.
+   * 
+   * @return true when the command should end.
+   */
+  @Override
+  public boolean isFinished() {
+    // Example condition: return m_subsystem.isAtTarget();
+    return false;
+  }
+}

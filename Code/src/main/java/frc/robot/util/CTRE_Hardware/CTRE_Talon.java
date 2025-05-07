@@ -4,6 +4,8 @@ import com.ctre.phoenix6.hardware.TalonFX;
 
 import static edu.wpi.first.units.Units.*;
 
+import org.littletonrobotics.junction.Logger;
+
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -367,18 +369,16 @@ public class CTRE_Talon extends SubsystemBase {
             Volts.of(4), // Reduce dynamic step voltage to 4 V to prevent brownout
             null,        // Use default timeout (10 s)
             // Log state with SignalLogger class
-            state -> SignalLogger.writeString("SysIdTranslation_State", state.toString())
+            state -> Logger.recordOutput(MotorIdentification+"/SysIdTranslation_State", state.toString())
         ),
         new SysIdRoutine.Mechanism(
-            output -> {
+            output -> 
                 /* output is actually radians per second, but SysId only supports "volts" */
-                CTRE_motor.setVoltage(output.in(Volts));
-                /* also log the requested output for SysId */
-                SignalLogger.writeDouble("Rotational_Rate", output.in(Volts));
-            },
+                CTRE_motor.setVoltage(output.in(Volts)),
             null,
             this
         )
+
     );
 
         /**
