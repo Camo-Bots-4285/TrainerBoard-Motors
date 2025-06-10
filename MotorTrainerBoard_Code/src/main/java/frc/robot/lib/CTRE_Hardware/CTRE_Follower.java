@@ -1,0 +1,161 @@
+package frc.robot.lib.CTRE_Hardware;
+
+import frc.robot.Robot;
+
+
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+
+import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
+import com.revrobotics.spark.config.SparkBaseConfig;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.revrobotics.spark.config.SparkMaxConfig;
+import com.revrobotics.spark.config.SparkFlexConfig;
+import com.revrobotics.spark.SparkFlex;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.Follower;
+import com.ctre.phoenix6.hardware.TalonFX;
+import com.revrobotics.RelativeEncoder;
+import com.revrobotics.spark.ClosedLoopSlot;
+import com.revrobotics.spark.SparkBase;
+import com.revrobotics.spark.SparkBase.ControlType;
+import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.SparkBase.ResetMode;
+import com.revrobotics.spark.SparkClosedLoopController;
+
+
+
+public class CTRE_Follower extends SubsystemBase {
+
+  /*Motor and Spark Identification Constants */
+    private TalonFX CTRE_Follower_motor;
+    private TalonFXConfiguration talonFXConfigs;
+
+  /* Motor Constantants */
+    public String MotorIdentification;
+
+  /*Emergency Stop Vaibales */
+    // Predefined values (can be changed later as needed)
+    public int numLoops = 5;  // Number of loops to store readings
+    private  int requiredLoopsToShutOff = 3;  // The number of loops that must exceed the limit to shut off the motor
+
+    private double[] currentReadings = new double[numLoops];  // Array to store the current readings
+    private int currentIndex = 0;  // Keeps track of the current index in the readings array
+    private int excessCount = 0;  // Tracks how many times the current exceeded the limit
+
+    public double emergenyStopTimeDuration = 3;
+    public double emergenyStopTime= - emergenyStopTimeDuration;
+
+
+    public double[] Follower_PhysicalCharacteristics; //Bring in double values
+
+  /*Motion Constants */
+    public double velocity;
+    public double accleration;
+    public double allowedError;
+    public double[] TunnerValues;
+
+  /*Constuctor to inalize values */
+  public CTRE_Follower(
+      String MotorIdentification,//Bring in the name of the motor so error can speciffy
+      int MotorId,
+      String CANLoop,
+      int LeadId,
+      double[] Follower_PhysicalCharacteristics, //Bring in double values
+      boolean invertedFormLeader//Bring in the inversion settings
+
+    ) {
+
+      this.Follower_PhysicalCharacteristics=Follower_PhysicalCharacteristics;
+
+      CTRE_Follower_motor = new TalonFX(MotorId,CANLoop);
+      CTRE_Follower_motor.setControl(new Follower(LeadId, invertedFormLeader));
+    
+  }
+
+  
+  /*Getter-Get values from the motors */
+    public Rotation2d getMotorPosition() {//Get the position of the motor and translates it to Rotation2D
+      return Rotation2d.fromRotations(CTRE_Follower_motor.getPosition().getValueAsDouble()/Follower_PhysicalCharacteristics[0]);  // Return position of the motor
+  }
+
+  public Rotation2d getMotorVelocity_RPM() {//Get the velocity of the motor and translates it to Rotation2D per minute
+      return Rotation2d.fromRotations(CTRE_Follower_motor.getVelocity().getValueAsDouble()/Follower_PhysicalCharacteristics[0]*60);  // Return velocity of the motor
+  }
+
+  public double getVoltage() {//Get the voltage(volts) given to the motor controller
+      return CTRE_Follower_motor.getMotorVoltage().getValueAsDouble();// Return voltage (volts) of the motor
+  }
+
+  public double getAmps() {//Get the current(amps) given to the motor
+      return CTRE_Follower_motor.getStatorCurrent().getValueAsDouble();  // Return current (amps) of the motor
+  }
+
+  public double getTemputerInCelcius(){//Get the temputarue of the motor
+      return CTRE_Follower_motor.getDeviceTemp().getValueAsDouble();
+    }
+
+  public Rotation2d getMechanismPosition() {//Get the position after gear ratio and translates it to Rotation2D
+      return Rotation2d.fromRotations(CTRE_Follower_motor.getPosition().getValueAsDouble());
+  }
+
+  public Rotation2d getMechanismVelocity_RPM() {//Get the velocity after gear ratio and translates it to Rotation2D per minute
+      return Rotation2d.fromRotations(CTRE_Follower_motor.getVelocity().getValueAsDouble()*60);
+  }
+
+  public double getTipSpeed() {//Get the velocity after gear ratio and wheel circomfernce m/s
+      return getMechanismVelocity_RPM().getRadians()*Follower_PhysicalCharacteristics[1]/60; 
+  }
+
+  public boolean needEmergenyStop(){ //Check the amp limit and sees if motor need to Stop
+      // Add the current reading to the array, replacing the old one at the current index
+      currentReadings[currentIndex] = getAmps();
+
+      // If the current reading exceeds the emergency limit, increment excessCount
+      if (getAmps() >Follower_PhysicalCharacteristics[3]) {
+          excessCount++;
+      }
+
+      // Update the current index, wrapping around to 0 if it exceeds numLoops
+      currentIndex = (currentIndex + 1) % numLoops;
+
+      // Check if enough loops have exceeded the limit
+      if (excessCount >= requiredLoopsToShutOff) {
+          return true;  // The motor should be shut off
+      }
+
+      return false;  // The motor should not be shut off yet
+    }
+
+    public boolean motorOverHeating(){//Returns true if temputere is above value
+      if (getTemputerInCelcius()>= Follower_PhysicalCharacteristics[2]){//Checks tempurature
+        return true;
+      }
+      return false;
+    }
+
+         // Method to check if the motor should be shut off based on the current reading
+         public void runCrashProdection() {
+          /*Check if need to be in emergeny stop and print error while is in that state */
+          /*Make sure to add end every command using needEmergenyStop() in finshed if using */
+  
+          /*Check if the motor needs emergeny stop*/
+          if(needEmergenyStop()){
+              emergenyStopTime= Robot.Time;
+              System.err.println("WARNING"+MotorIdentification+":Emergency Stopped but is follower");
+          }
+          /*Check if the motor has been emergeny stop withing the emergenyStopTimeDuration4*/
+          else if(Robot.Time-emergenyStopTimeDuration < emergenyStopTime){
+              System.err.println("WARNING"+MotorIdentification+":Emergency Stopped Cool Down but is follower");
+          }
+      }
+  
+      public void runTemperatureWarning() {//Displays warning if the motor is too hot.
+        if(motorOverHeating()){
+            System.err.println("WARNING:"+MotorIdentification+":Motor is over heating");
+        }
+      
+    }
+}
