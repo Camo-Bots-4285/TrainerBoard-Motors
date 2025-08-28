@@ -1,0 +1,71 @@
+package frc.robot.commands;
+
+import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.subsystems.TemplateSubsystem;
+
+/**
+ * TemplateCommand
+ * 
+ * This is a basic command that uses a subsystem.
+ * You can change this to make your own commands for the robot.
+ *
+ * How to use:
+ * - Replace TemplateSubsystem with your own subsystem.
+ * - Put your robot code inside initialize(), execute(), and end().
+ */
+public class TemplateCommand extends Command {
+
+  private final TemplateSubsystem m_subsystem;
+
+  /**
+   * Creates a new command that uses the given subsystem.
+   * 
+   * @param subsystem The subsystem this command controls.
+   */
+  public TemplateCommand(TemplateSubsystem subsystem) {
+    this.m_subsystem = subsystem;
+    // Tell the robot which subsystem this command needs
+    addRequirements(subsystem);
+  }
+
+  /**
+   * Runs once when the command starts.
+   * Use this to get ready, like resetting sensors or starting motors.
+   */
+  @Override
+  public void initialize() {
+    // Example: m_subsystem.resetEncoder();
+  }
+
+  /**
+   * Runs over and over while the command is active.
+   * Put the main code here that runs repeatedly.
+   */
+  @Override
+  public void execute() {
+    // Example: m_subsystem.setMotorSpeed(0.5);
+  }
+
+  /**
+   * Runs once when the command stops or is cancelled.
+   * Use this to stop motors or clean up.
+   * 
+   * @param interrupted True if the command was stopped early.
+   */
+  @Override
+  public void end(boolean interrupted) {
+    // Example: m_subsystem.stopMotor();
+  }
+
+  /**
+   * Returns true when the command should stop running.
+   * Change this to make your command end on its own.
+   * 
+   * @return true if the command is finished.
+   */
+  @Override
+  public boolean isFinished() {
+    // Example: return m_subsystem.isAtTarget();
+    return false; // Keeps running until someone stops it
+  }
+}

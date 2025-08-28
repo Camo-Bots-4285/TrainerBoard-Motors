@@ -1,0 +1,82 @@
+package frc.robot.subsystems;
+
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+
+/**
+ * TemplateSubsystem
+ * 
+ * This is a basic example of a robot subsystem.
+ * A subsystem controls one part of the robot, like a motor, sensor, or mechanism.
+ * 
+ * You can rename this and use it as a starting point for your own subsystem.
+ * 
+ * @author YourName
+ * @since 2025 FRC Season
+ */
+public class TemplateSubsystem extends SubsystemBase {
+
+  // ========== Example Variables ==========
+
+  // Put hardware devices here
+  // Example: private final PWMSparkMax motor;
+  // Example: private final Encoder encoder;
+
+  /**
+   * Creates a new TemplateSubsystem.
+   * Set up your motors, sensors, and other hardware here.
+   */
+  public TemplateSubsystem() {
+    // Example: motor = new PWMSparkMax(0);
+    // Example: encoder = new Encoder(0, 1);
+    SmartDashboard.putBoolean("Subsytem/Template",true);//Wil set the Subsytem to true on intalization
+  }
+
+  /**
+   * This method runs every robot loop (about 50 times per second).
+   * You can use it to check sensors or update values regularly.
+   */
+  @Override
+  public void periodic() {
+    // Example: SmartDashboard.putNumber("Encoder", encoder.getDistance());
+  }
+
+  // ========== Example Methods ==========
+
+  /**
+   * Sets the motor to a specific speed.
+   * 
+   * @param speed The speed to run the motor (-1.0 to 1.0).
+   */
+  public void setMotorSpeed(double speed) {
+    // Example: motor.set(speed);
+  }
+
+  /**
+   * Stops all motors or actions for this subsystem.
+   */
+  public void stop() {
+    // Example: motor.stopMotor();
+  }
+
+  /**
+   * Returns true if the subsystem has reached its goal.
+   * You can change this condition to fit your subsystem.
+   * 
+   * @return true if the goal is reached.
+   */
+  public boolean isAtTarget() {
+    // Example: return encoder.getDistance() >= 100;
+    return false;
+  }
+
+  // ========== Javadoc Template (for your own methods) ==========
+  /*
+   * /**
+   *  * [Brief description of what the method does]
+   *  *
+   *  * @param [name] [What this input controls]
+   *  * @return [What the method gives back (if anything)]
+   *  *\/
+   */
+
+}

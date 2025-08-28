@@ -1,0 +1,21 @@
+MotorBase-Template that maps methods that
+ each encoder class must fill
+   
+Spark_Max-Defines logic for motor
+    -Getting motor values
+    -Sending motor data
+
+Neo-Define default current and tempurater 
+
+Custom Class- If the user wishes to override any methods
+like SysIDroutine or current or great new more interfacing
+they will do that here normally this will not be necisary for 
+
+Subsytem- To keep subsytem small and manable we will call the motor 
+like we did before with a few less values. Normal Neo will be called
+unless Custom class is neeeded.
+
+TODO:
+Possibale add motor to gear and gear to motor methods
+Comment a lot
+Make Spark_Flex or make way to change between the two

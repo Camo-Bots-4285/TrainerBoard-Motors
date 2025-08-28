@@ -1,0 +1,67 @@
+package frc.camobots.commands.Hybrid;
+
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
+
+/**
+ * MultiPhaseCommand shows how to chain commands together in different ways:
+ * - Run commands one after another (SequentialCommandGroup)
+ * - Run commands at the same time, all must finish (ParallelCommandGroup)
+ * - Run commands at the same time, but stop all when one finishes (ParallelDeadlineGroup)
+ * 
+ * <p>This is a great starting point for making complex robot actions step-by-step.
+ * 
+ * <p>Remember to addRequirements() for all subsystems your commands need.
+ * 
+ * @author YourName
+ * @since 2025 FRC Season
+ */
+public class MultiPhaseCommand extends SequentialCommandGroup {
+
+  public MultiPhaseCommand() {
+
+    // Declare your subsystem requirements here to avoid conflicts
+    // addRequirements(subsystem1, subsystem2);
+
+    addCommands(
+
+      // STEP 1: Run two commands at the same time. Both must finish before moving on.
+      new ParallelCommandGroup(
+        // e.g. move arm and drive to starting position at the same time
+        // new MoveArmToPosition(armSubsystem, 45),
+        // new DriveToPose(driveSubsystem, startPose)
+      ),
+
+      // STEP 2: Wait for half a second to let things settle
+      new WaitCommand(0.5),
+
+      // STEP 3: Run commands in parallel, but stop all when the deadline command finishes.
+      new ParallelDeadlineGroup(
+        // Deadline command: finishes when arm is ready
+        // new ArmReadyCheck(armSubsystem),
+
+        // Runs alongside deadline and stops immediately when deadline ends:
+        // new SpinUpShooter(shooterSubsystem),
+        // new RunIntake(intakeSubsystem)
+      ),
+
+      // STEP 4: Run commands one after another again, e.g., shoot and feed balls
+      new SequentialCommandGroup(
+        // new FireShooter(shooterSubsystem).withTimeout(2), // shoot for 2 seconds
+        // new FeedShooter(intakeSubsystem).withTimeout(2)  // feed balls for 2 seconds
+      ),
+
+      // STEP 5: Instantly stop all motors to finish cleanly
+      new InstantCommand(() -> {
+        // e.g.,
+        // driveSubsystem.stopModules();
+        // shooterSubsystem.stop();
+        // intakeSubsystem.stop();
+        // armSubsystem.stop();
+      } /*, driveSubsystem, shooterSubsystem, intakeSubsystem, armSubsystem*/)
+    );
+  }
+}
