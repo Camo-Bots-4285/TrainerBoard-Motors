@@ -18,15 +18,8 @@ public class ClimberSubsystem extends SubsystemBase {
   /** The leader motor controller for the climber */
   public final MotorIO leaderMotor;
 
-  /** The follower motor controller for the climber */
-  private final MotorIO followerMotor;
-
   /** Inputs for the leader motor, including amps, voltage, position, velocity, etc. */
   private final MotorIOInputsAutoLogged leaderInputs = new MotorIOInputsAutoLogged();
-
-  /** Inputs for the follower motor, including amps, voltage, position, velocity, etc. */
-  private final MotorIOInputsAutoLogged followerInputs = new MotorIOInputsAutoLogged();
-
 
   /** Constructor run when the class is instantiated (executes once at code start) */
   public ClimberSubsystem() {
@@ -45,14 +38,8 @@ public class ClimberSubsystem extends SubsystemBase {
       );
 
       // Initialize follower motor, slaved to the leader motor
-      followerMotor = new RevMotorIO(
-        REV_Double.Motor_ID_Follower,
-        REV_Double.isFlex,
-        REV_Double.Gear_Ratio,
-        REV_Double.Wheel_Radius,
-        REV_Double.Follower_Inverted_from_Leader,
-        leaderMotor
-      );
+      leaderMotor.set_Follower(REV_Double.Motor_ID_Follower, false, REV_Double.Follower_Inverted_from_Leader);
+
     } else {
       // Initialize leader motor for simulation with Neo550 motors
       leaderMotor = new MotorIOSim(
@@ -63,8 +50,6 @@ public class ClimberSubsystem extends SubsystemBase {
         REV_Double.motionProfile_Sim,
         false
       );
-      // Follower motor mirrors the leader in simulation
-      followerMotor = leaderMotor;
     }
   }
 
@@ -73,11 +58,9 @@ public class ClimberSubsystem extends SubsystemBase {
   public void periodic() {
     // Update inputs for both leader and follower motors
     leaderMotor.updateInputs(leaderInputs);
-    followerMotor.updateInputs(followerInputs);
 
     // Log motor inputs for debugging and analysis
     Logger.processInputs("2_NeoLeader", leaderInputs);
-    Logger.processInputs("2_NeoFollower", followerInputs);
 
     //Record the current position of the climber
     Logger.recordOutput("Pose_Climber", new Pose3d[] {new Pose3d(-0.127,0,0.1143, new Rotation3d(0, Units.rotationsToRadians(leaderInputs.mechanismPositionRot), 0))});

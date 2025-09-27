@@ -26,6 +26,7 @@ public class RevMotorIO implements MotorIO {
     private SparkClosedLoopController controller;
     private SparkBaseConfig config;
     private RelativeEncoder encoder;
+    private boolean isFlex;
 
     private final int id;
     private final double gearRatio;
@@ -60,6 +61,7 @@ public class RevMotorIO implements MotorIO {
         this.id = id;
         this.gearRatio = gearRatio;
         this.wheelRadius = wheelRadius;
+        this.isFlex=isFlex;
         motorType = (motorType != null) ? motorType : new MotorTypes.REV_Defualt();
         motionProfile = (motionProfile != null) ? motionProfile : MotionProfileHelpers.getDisabledREVProfile();
 
@@ -116,6 +118,7 @@ public class RevMotorIO implements MotorIO {
             .allowedClosedLoopError(motionProfile.allowedErrorRotations, ClosedLoopSlot.kSlot1);
 
         motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
     }
 
     /**
@@ -125,48 +128,36 @@ public class RevMotorIO implements MotorIO {
      *
      * @param id The unique identifier for the motor (CAN ID).
      * @param isFlex Boolean indicating whether the motor is a SparkFlex (true) or a SparkMax (false).
-     * @param gearRatio The gear ratio applied to the motor's output.
-     * @param wheelRadius The radius of the wheel attached to the motor, used for motion calculations.
      * @param isBrake Boolean indicating whether the motor should use brake mode (true) or coast mode (false).
      * @param inverted_from_leader Boolean indicating whether the motor should be inverted relative to the leader motor.
-     * @param motorType The type of motor (e.g., brushless, brushed) to configure.
-     * @param leader The leader motor instance (of type {@link MotorIO}) that this follower motor will mimic in behavior.
      *
-     * @see MotorIO
      */
-    public RevMotorIO(
+    @Override
+    public void set_Follower(
         int id,
-        boolean isFlex,
-        double gearRatio,
-        double wheelRadius,
-        boolean inverted_from_leader,
-        MotorIO leader
+        boolean isBrake,
+        boolean inverted_from_leader
     ) {
-        this.id = id;
-        this.gearRatio = gearRatio;
-        this.wheelRadius = wheelRadius;
 
-        RevMotorIO leaderMotor = (RevMotorIO) leader;
+        SparkBase motor_follower;
+        SparkBaseConfig config_follower;
 
         // Initialize motor and config based on whether it's flex or not
         if (isFlex) {
-            motor = new SparkFlex(id, MotorType.kBrushless);
-            config = new SparkFlexConfig();
+            motor_follower = new SparkFlex(id, MotorType.kBrushless);
+            config_follower = new SparkFlexConfig();
         } else {
-            motor = new SparkMax(id, MotorType.kBrushless);
-            config = new SparkMaxConfig();
+            motor_follower = new SparkMax(id, MotorType.kBrushless);
+            config_follower = new SparkMaxConfig();
         }
 
-        config
-        .apply(leaderMotor.config)
-        .follow(leaderMotor.id, inverted_from_leader);
+        config_follower
+        .apply(config)
+        .idleMode(isBrake ? IdleMode.kBrake : IdleMode.kCoast)
+        .follow(this.id, inverted_from_leader);
+        controller = motor_follower.getClosedLoopController();
 
-        motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-
-        // Get the controller and encoder for the follower motor
-        controller = motor.getClosedLoopController();
-        encoder = motor.getEncoder();
-
+        motor_follower.configure(config_follower, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     }
 
 

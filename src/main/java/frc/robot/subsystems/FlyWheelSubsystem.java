@@ -24,9 +24,9 @@ public class FlyWheelSubsystem extends SubsystemBase {
   /** Constructor run when class is defined (run only once when the code starts) */
   public FlyWheelSubsystem() {
     //Checks if the robot is real
-    FlyWheel_Motor = RobotBase.isReal()
+    if ( RobotBase.isReal()){
     //If it is real runs code for a Neo550 running on a Spark
-        ?  new RevMotorIO(
+    FlyWheel_Motor = new RevMotorIO(
           REV_Single.Motor_ID,
           REV_Single.isFlex,
           REV_Single.Gear_Ratio,
@@ -34,14 +34,18 @@ public class FlyWheelSubsystem extends SubsystemBase {
           REV_Single.Idle_Mode,
           REV_Single.Inverted,
           new MotorTypes.Neo550(),
-          REV_Single.motionProfile_Real)
+          REV_Single.motionProfile_Real);
+    }
     //If is not real will run a FlyWheel that is driven by a Neo 550
-        : new FlyWheelSimIO(
+        else{
+          FlyWheel_Motor = new MotorIOSim(
           DCMotor.getNeo550(1),
           REV_Single.Gear_Ratio,
           REV_Single.Wheel_Radius,
           0.4,
-          REV_Single.motionProfile_Sim);
+          REV_Single.motionProfile_Sim, 
+          false);
+        }
 
       //Set the motor encoder to read zero on start of code
       FlyWheel_Motor.setCurrentMechanismPosition(0);
@@ -64,7 +68,12 @@ public class FlyWheelSubsystem extends SubsystemBase {
     //Record the current position of the wheel
     Logger.recordOutput("Pose_Wheel", new Pose3d[] {new Pose3d(0.04445,-0.127,0.6223, new Rotation3d(0, 0, - Units.rotationsToRadians(inputs.mechanismPositionRot)))});
 
-    FlyWheel_Motor.setVoltage(12);
+    //FlyWheel_Motor.setVoltage(12);
+
+    if (inputs.mechanismPositionRot<5){
+      FlyWheel_Motor.setTargetMechanismVelocity(60*10*4);
+    }
+    else{FlyWheel_Motor.stop();}
   }
 
 }

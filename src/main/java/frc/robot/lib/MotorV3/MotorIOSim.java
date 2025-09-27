@@ -14,6 +14,10 @@ import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import frc.robot.lib.Motor.MotionProfileHelpers.SIM_MotionProfile;
 import org.littletonrobotics.junction.Logger;
 
+import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.SparkBase.ResetMode;
+import com.revrobotics.spark.config.SparkBaseConfig;
+
 /**
  * Motor simulation for DC motors, supporting position and velocity control modes.
  * This class uses a PID controller, feedforward, and trapezoidal motion profiles to simulate a DC motor's behavior.
@@ -104,6 +108,9 @@ public class MotorIOSim implements MotorIO {
             velocityNoiseStdDev = 0.0;
         }
     }
+
+    @Override
+    public void set_Follower( int id, boolean isBrake, boolean invertedFromLeader){};
 
     /**
      * Custom discrete-time feedforward calculation to replace SimpleMotorFeedforward.calculate.
@@ -355,4 +362,5 @@ public class MotorIOSim implements MotorIO {
     public void setAmpLimits(int stallLimit, int freeLimit, int limitRPM) {
         // Simulation does not support current limits; no-op
     }
+
 }

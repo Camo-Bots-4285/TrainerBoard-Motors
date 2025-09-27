@@ -19,6 +19,8 @@ package frc.robot.lib.MotorV3;
 
 import org.littletonrobotics.junction.AutoLog;
 
+import com.fasterxml.jackson.databind.ser.std.StdKeySerializers.Default;
+
 /**
  * Interface representing motor control and sensor updates for various motor types. 
  * This interface provides a structure for motor input/output operations such as 
@@ -136,6 +138,11 @@ public interface MotorIO {
      * Stops the motor and any controlled mechanism immediately.
      */
     void stop();
+
+    /**
+     * Set a motor that will just be followed by the existing motor
+     */
+    void set_Follower( int id, boolean isBrake, boolean invertedFromLeader);
 
     /**
      * Sets the motor to brake or coast mode.

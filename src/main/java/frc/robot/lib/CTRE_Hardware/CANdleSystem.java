@@ -1,32 +1,31 @@
 package frc.robot.lib.CTRE_Hardware;
 
 
-// /**
-// * Description:
-// * The CANdle MultiAnimation example demonstrates using multiple animations with CANdle.
-// * This example has the robot using a Command Based template to control the CANdle.
-// * 
-// * This example uses:
-// * - A CANdle wired on the CAN Bus, with a 5m led strip attached for the extra animatinos.
-// * 
-// * Controls (with Xbox controller):
-// * Right Bumper: Increment animation
-// * Left Bumper: Decrement animation
-// * Start Button: Switch to setting the first 8 LEDs a unique combination of colors
-// * POV Right: Configure maximum brightness for the CANdle
-// * POV Down: Configure medium brightness for the CANdle
-// * POV Left: Configure brightness to 0 for the CANdle
-// * POV Up: Change the direction of Rainbow and Fire, must re-select the animation to take affect
-// * A: Print the VBat voltage in Volts
-// * B: Print the 5V voltage in Volts
-// * X: Print the current in amps
-// * Y: Print the temperature in degrees C
-// * 
-// * Supported Version:
-// * 	- CANdle: 22.1.1.0
-// */
+/**
+* Description:
+* The CANdle MultiAnimation example demonstrates using multiple animations with CANdle.
+* This example has the robot using a Command Based template to control the CANdle.
+* 
+* This example uses:
+* - A CANdle wired on the CAN Bus, with a 5m led strip attached for the extra animatinos.
+* 
+* Controls (with Xbox controller):
+* Right Bumper: Increment animation
+* Left Bumper: Decrement animation
+* Start Button: Switch to setting the first 8 LEDs a unique combination of colors
+* POV Right: Configure maximum brightness for the CANdle
+* POV Down: Configure medium brightness for the CANdle
+* POV Left: Configure brightness to 0 for the CANdle
+* POV Up: Change the direction of Rainbow and Fire, must re-select the animation to take affect
+* A: Print the VBat voltage in Volts
+* B: Print the 5V voltage in Volts
+* X: Print the current in amps
+* Y: Print the temperature in degrees C
+* 
+* Supported Version:
+* 	- CANdle: 22.1.1.0
+*/
 
-// package frc.robot.util.CTRE_Hardware;
 
 // import edu.wpi.first.wpilibj.XboxController;
 // import edu.wpi.first.wpilibj2.command.SubsystemBase;

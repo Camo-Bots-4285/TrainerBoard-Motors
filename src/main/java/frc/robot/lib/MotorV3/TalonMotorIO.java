@@ -17,6 +17,7 @@ public class TalonMotorIO implements MotorIO {
     private final TalonFXConfiguration config;
     private final double gearRatio;
     private final double wheelRadius;
+    private final String canBus;
 
     /**
      * Initializes a Talon motor for standalone use, applying various configurations for motor behavior, including
@@ -48,6 +49,7 @@ public class TalonMotorIO implements MotorIO {
     ) {
         this.gearRatio = gearRatio;
         this.wheelRadius = wheelRadius;
+        this.canBus = canBus;
         NeutralModeValue neutralMode = isBrake ? NeutralModeValue.Brake : NeutralModeValue.Coast;
 
         motor = new TalonFX(id, canBus);
@@ -108,48 +110,33 @@ public class TalonMotorIO implements MotorIO {
      * 
      * @param id The unique motor ID for this follower Talon motor.
      * @param canBus The CAN bus name to which this motor is connected.
-     * @param gearRatio The gear ratio for the motor's mechanism, adjusting the sensor feedback to real-world measurements.
-     * @param wheelRadius The radius of the wheel being driven by the motor.
      * @param isBrake Specifies whether the motor should engage brake mode (true) or coast mode (false) when not moving.
      * @param invertedFromLeader Specifies whether this follower motor should be inverted relative to the leader motor's rotation.
-     * @param leader The leader motor (of type {@link MotorIO}) that this motor will follow. The follower motor will adopt
-     *               configurations such as current limits and gear ratio from this leader.
      *
      * @see MotorIO
      */
-    public TalonMotorIO(
-    int id,
-    String canBus,
-    double gearRatio,
-    double wheelRadius,
-    boolean isBrake, 
-    boolean invertedFromLeader,
-    MotorIO leader
-) {
+    @Override
+    public void set_Follower(
+        int id,
+        boolean isBrake,
+        boolean invertedFromLeader
+    ) {
 
-    this.gearRatio = gearRatio;
-        this.wheelRadius = wheelRadius;
+        //Defines follower motor
+        TalonFX motor_follower = new TalonFX(id, canBus);
+
+        //Converts from boolean to Talon neutral mode
         NeutralModeValue neutralMode = isBrake ? NeutralModeValue.Brake : NeutralModeValue.Coast;
 
-        motor = new TalonFX(id, canBus);
-        config = new TalonFXConfiguration();
-
-        motor.setNeutralMode(neutralMode);
-
-        // Set up current limits based on leader's configuration
-        TalonMotorIO leaderProfile = (TalonMotorIO) leader;
-
-        config.CurrentLimits = leaderProfile.getConfig().CurrentLimits;
-
-        // Apply gear ratio and feedback sensor
-        config.Feedback.SensorToMechanismRatio = gearRatio;
-
+        //Sets neutral mode
+        motor_follower.setNeutralMode(neutralMode);
+        
         // Set the motor to follow the leader with inversion
-        motor.setControl(new Follower(leaderProfile.motor.getDeviceID(), invertedFromLeader));
+        motor_follower.setControl(new Follower(motor.getDeviceID(), invertedFromLeader));
 
         // Apply configuration
-        motor.getConfigurator().apply(config, 0.010);
-}
+        motor_follower.getConfigurator().apply(config, 0.010);
+    }
 
 
     @Override
