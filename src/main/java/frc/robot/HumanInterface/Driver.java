@@ -8,8 +8,7 @@ import frc.robot.HumanInterface.StateMachine.StateManager;
 import frc.robot.HumanInterface.StateMachine.State_Double;
 import frc.robot.HumanInterface.StateMachine.State_Single;
 import frc.robot.HumanInterface.StateMachine.StateManager.BindType;
-import frc.robot.subsystems.ClimberSubsystem;
-import frc.robot.subsystems.FlyWheelSubsystem;
+
 
 /**
  * DriverInterface
@@ -24,8 +23,7 @@ public class Driver {
     private final static Joystick driverJoystick = new Joystick(0);
     
         private StateManager stateManager;
-        private FlyWheelSubsystem m_flyWheel;
-        private ClimberSubsystem m_climber;
+
     
         /**
          * Constructor
@@ -34,10 +32,8 @@ public class Driver {
          * @param m_flyWheel Neo_Single subsystem
          * @param drivetrain Swerve drivetrain subsystem
          */
-        public Driver(StateManager stateManager, FlyWheelSubsystem m_flyWheel, ClimberSubsystem m_climber) {
+        public Driver(StateManager stateManager) {
             this.stateManager = stateManager;
-            this.m_flyWheel = m_flyWheel;
-            this.m_climber = m_climber;
         }
     
     
@@ -86,8 +82,8 @@ public class Driver {
      */
     public void StateManagerSetup() {
         //Defines the instance very import to keep the same because state check looks for instance not class
-        State_Double doubleState = new State_Double(stateManager, m_flyWheel, m_climber);
-        State_Single singleState = new State_Single(stateManager, m_flyWheel, m_climber);
+        State_Double doubleState = new State_Double(stateManager);
+        State_Single singleState = new State_Single(stateManager);
         
         //Map button for doubleState
         stateManager.bindAllButtonsForState(

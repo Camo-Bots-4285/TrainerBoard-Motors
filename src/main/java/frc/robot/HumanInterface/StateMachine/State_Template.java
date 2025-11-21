@@ -3,8 +3,7 @@ package frc.robot.HumanInterface.StateMachine;
 import java.util.function.Supplier;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.ClimberSubsystem;
-import frc.robot.subsystems.FlyWheelSubsystem;
+
 
 /**
  * State:
@@ -27,14 +26,12 @@ import frc.robot.subsystems.FlyWheelSubsystem;
 public abstract class State_Template {
 
     protected final StateManager stateManager;  // Reference to StateManager for state control
-    protected final FlyWheelSubsystem m_flyWheel;    // Example subsystem passed into the state
-    protected final ClimberSubsystem m_climber;  
+
 
     /** Constructor to pass dependencies like subsystems and state manager */
-    public State_Template(StateManager stateManager, FlyWheelSubsystem m_flyWheel, ClimberSubsystem m_climber){
-        this.m_flyWheel = m_flyWheel;
+    public State_Template(StateManager stateManager){
+
         this.stateManager = stateManager;
-        this.m_climber = m_climber;
     }
 
     /** Returns the name of the current state */

@@ -1,7 +1,38 @@
 package frc.robot;
 
-import frc.robot.lib.Motor.MotionProfileHelpers.REV_MotionProfile;
-import frc.robot.lib.Motor.MotionProfileHelpers.SIM_MotionProfile;
+import java.util.Optional;
+
+import static edu.wpi.first.units.Units.*;
+
+import com.ctre.phoenix6.configs.CANcoderConfiguration;
+import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
+import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.pathplanner.lib.path.PathConstraints;
+import com.revrobotics.spark.ClosedLoopSlot;
+import com.revrobotics.spark.config.MAXMotionConfig;
+import com.revrobotics.spark.config.SparkBaseConfig;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.revrobotics.spark.config.SparkFlexConfig;
+import com.revrobotics.spark.config.SparkMaxConfig;
+
+import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.units.AngularAccelerationUnit;
+import edu.wpi.first.units.Units;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularAcceleration;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.Mass;
+import edu.wpi.first.units.measure.MomentOfInertia;
+import edu.wpi.first.units.measure.Velocity;
+import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
+
+
 
 /**
  * The Constants class is a place to store all the robot-wide numbers and settings.
@@ -32,132 +63,179 @@ public final class Constants {
     public static final String BUILD_DATE = "2025-08-23 11:01 AM EST";
     public static final int DIRTY = 0;
   }
+    public static final Mode simMode = Mode.SIM;
+    public static final Mode currentMode = RobotBase.isReal() ? Mode.REAL : simMode;
 
-  public static class REV_Single {
-    /** Unique identifier for the motor, used for logging*/
-    public static final String MotorIdentification = "1_FlyWheel/";
+    public static final boolean tuningMode = false;
 
-    /** CAN ID assigned to the motor */
-    public static final int Motor_ID = 14;
+    public static enum Mode {
+        /** Running on a real robot. */
+        REAL,
 
-    /** Indicates if the motor is a Flex model */
-    public static final boolean isFlex = false;
+        /** Running a physics simulator. */
+        SIM,
 
-    /** Gear ratio from motor to end motion */
-    public static final double Gear_Ratio = 100;
+        /** Replaying from a log file. */
+        REPLAY
+    }
 
-    /** Wheel radius in meters */
-    public static final double Wheel_Radius = 0.0508;
+    public static class RobotConstants {
+        public static String serial;
+        public static boolean isComp;
+        public static boolean isAlpha;
 
-    /** Idle mode setting (true for brake, false for coast) */
-    public static final boolean Idle_Mode = false;
+        // TODO: Fill in with real serial number prefixes. Figure out by displaying/logging String
+        // serial.
+        public static final String compSerial = "0001";
+        public static final String alphaSerial = "0000";
 
-    /** Motor inversion setting */
-    public static final boolean Inverted = false;
+        static {
+            if (Robot.isReal()) {
+                // Roborio id recognition
+                serial = System.getenv("serialnum");
+            } else {
+                serial = "5188";
+            }
+            RobotConstants.isComp = serial.startsWith(RobotConstants.compSerial);
+            RobotConstants.isAlpha = serial.startsWith(RobotConstants.alphaSerial);
+        }
+    }
 
-    /** Motion profile for real-world motor control */
-    public static final REV_MotionProfile motionProfile_Real = new REV_MotionProfile(
-      0.052554, 0.0, 0.029932, 0.000022105,
-      0.0, 0.0, -0.75, 0.75,
+    public static RobotType robotType = RobotConstants.isComp ? RobotType.COMP
+        : RobotConstants.isAlpha ? RobotType.ALPHA : RobotType.NONE;
 
-      1.2939E-10, 0.00000015, 0.0, 0.0000815,
-      75.0, 0.003, -0.75, 0.75,
+    public enum RobotType {
+        COMP,
+        ALPHA,
+        NONE
+    }
 
-      0, 0, 0, 0,
-      0, 0, 0, 0,
+ 
+  // public static class REV_Single {
+  //   /** Unique identifier for the motor, used for logging*/
+  //   public static final String MotorIdentification = "1_FlyWheel/";
+
+  //   /** CAN ID assigned to the motor */
+  //   public static final int Motor_ID = 14;
+
+  //   /** Indicates if the motor is a Flex model */
+  //   public static final boolean isFlex = false;
+
+  //   /** Gear ratio from motor to end motion */
+  //   public static final double Gear_Ratio = 100;
+
+  //   /** Wheel radius in meters */
+  //   public static final double Wheel_Radius = 0.0508;
+
+  //   /** Idle mode setting (true for brake, false for coast) */
+  //   public static final boolean Idle_Mode = false;
+
+  //   /** Motor inversion setting */
+  //   public static final boolean Inverted = false;
+
+  //   /** Motion profile for real-world motor control */
+  //   public static final REV_MotionProfile motionProfile_Real = new REV_MotionProfile(
+  //     0.052554, 0.0, 0.029932, 0.000022105,
+  //     0.0, 0.0, -0.75, 0.75,
+
+  //     1.2939E-10, 0.00000015, 0.0, 0.0000815,
+  //     75.0, 0.003, -0.75, 0.75,
+
+  //     0, 0, 0, 0,
+  //     0, 0, 0, 0,
       
-      500, 750, 0.1
-    );
+  //     500, 750, 0.1
+  //   );
 
-    /** Motion profile for real-world motor control writen by Mang */
-    public static final REV_MotionProfile motionProfile_mang = new REV_MotionProfile(
-      0.93484, 0.0, 0.0091466, 0.00092549,
-      0.0, 0.0, -0.75, 0.75,
-      1.558E-06, 0, 0, 0.0000803,
-      0, 0, -1, 1,
-      0, 0, 0, 0,
-      0, 0, 0, 0,
-      500, 750, 1
-    );
+  //   /** Motion profile for real-world motor control writen by Mang */
+  //   public static final REV_MotionProfile motionProfile_mang = new REV_MotionProfile(
+  //     0.93484, 0.0, 0.0091466, 0.00092549,
+  //     0.0, 0.0, -0.75, 0.75,
+  //     1.558E-06, 0, 0, 0.0000803,
+  //     0, 0, -1, 1,
+  //     0, 0, 0, 0,
+  //     0, 0, 0, 0,
+  //     500, 750, 1
+  //   );
 
-    /** Motion profile for simulation, defining parameters like cruise RPM and acceleration */
-    public static final SIM_MotionProfile motionProfile_Sim = new SIM_MotionProfile(
-      0, 0.0, 10,    
-      0.0, 0.1076, 0.0,   
+  //   /** Motion profile for simulation, defining parameters like cruise RPM and acceleration */
+  //   public static final SIM_MotionProfile motionProfile_Sim = new SIM_MotionProfile(
+  //     0, 0.0, 10,    
+  //     0.0, 0.1076, 0.0,   
 
-      0, 0.0, 0,    
-      0.0, 0.1076, 0,   
+  //     0, 0.0, 0,    
+  //     0.0, 0.1076, 0,   
       
-      0, 
+  //     0, 
 
-      100,  
-      100
-    );
-  }
+  //     100,  
+  //     100
+  //   );
+  // }
 
-  public static class REV_Double {
-    /** Unique identifier for the leader motor, used for logging*/
-    public static final String MotorIdentification_Leader = "2_Climber/Leader";
+  // public static class REV_Double {
+  //   /** Unique identifier for the leader motor, used for logging*/
+  //   public static final String MotorIdentification_Leader = "2_Climber/Leader";
 
-    /** Unique identifier for the follower motor, used for logging*/
-    public static final String MotorIdentification_Follower = "2_Climber/Follower";
+  //   /** Unique identifier for the follower motor, used for logging*/
+  //   public static final String MotorIdentification_Follower = "2_Climber/Follower";
 
-    /** CAN ID assigned to the leader motor */
-    public static final int Motor_ID_Leader = 10;
+  //   /** CAN ID assigned to the leader motor */
+  //   public static final int Motor_ID_Leader = 10;
 
-    /** CAN ID assigned to the follower motor */
-    public static final int Motor_ID_Follower = 11;
+  //   /** CAN ID assigned to the follower motor */
+  //   public static final int Motor_ID_Follower = 11;
 
-    /** Indicates if the motors are Flex models */
-    public static final boolean isFlex = false;
+  //   /** Indicates if the motors are Flex models */
+  //   public static final boolean isFlex = false;
 
-    /** Gear ratio from motor to end motion */
-    public static final double Gear_Ratio = 300;
+  //   /** Gear ratio from motor to end motion */
+  //   public static final double Gear_Ratio = 300;
 
-    /** Wheel radius in meters */
-    public static final double Wheel_Radius = 0.0508;
+  //   /** Wheel radius in meters */
+  //   public static final double Wheel_Radius = 0.0508;
 
-    /** Idle mode setting (true for brake, false for coast) */
-    public static final boolean Idle_Mode = true;
+  //   /** Idle mode setting (true for brake, false for coast) */
+  //   public static final boolean Idle_Mode = true;
 
-    /** Leader motor inversion setting */
-    public static final boolean Leader_Inverted = false;
+  //   /** Leader motor inversion setting */
+  //   public static final boolean Leader_Inverted = false;
 
-    /** Follower motor inversion relative to the leader */
-    public static final boolean Follower_Inverted_from_Leader = true;
+  //   /** Follower motor inversion relative to the leader */
+  //   public static final boolean Follower_Inverted_from_Leader = true;
 
-    /** Indicates if the follower motor is a Spark controller */
-    public static final boolean Follower_Spark = true;
+  //   /** Indicates if the follower motor is a Spark controller */
+  //   public static final boolean Follower_Spark = true;
 
-    /** Motion profile for real-world motor control */
-    public static final REV_MotionProfile motionProfile_Real = new REV_MotionProfile(
-      1, 0.0, 0, 0,
-      0.0, 0.0, -1, 1,
+  //   /** Motion profile for real-world motor control */
+  //   public static final REV_MotionProfile motionProfile_Real = new REV_MotionProfile(
+  //     1, 0.0, 0, 0,
+  //     0.0, 0.0, -1, 1,
 
-      1.2939E-10, 0.00000015, 0.0, 0.0000815,
-      75.0, 0.003, -1, 1,
+  //     1.2939E-10, 0.00000015, 0.0, 0.0000815,
+  //     75.0, 0.003, -1, 1,
 
-      0, 0, 0, 0,
-      0, 0, 0, 0,
+  //     0, 0, 0, 0,
+  //     0, 0, 0, 0,
 
-      1500, 750, 0.1
-    );
+  //     1500, 750, 0.1
+  //   );
 
-    /** Motion profile for simulation, defining parameters like cruise RPM and acceleration */
-    public static final SIM_MotionProfile motionProfile_Sim = new SIM_MotionProfile(
-      0, 0, 0,    
-      0, 0.3227, 0,  
+  //   /** Motion profile for simulation, defining parameters like cruise RPM and acceleration */
+  //   public static final SIM_MotionProfile motionProfile_Sim = new SIM_MotionProfile(
+  //     0, 0, 0,    
+  //     0, 0.3227, 0,  
 
-      0, 0.0, 0,    
-      0, 0.3227, 0,   
+  //     0, 0.0, 0,    
+  //     0, 0.3227, 0,   
       
-      0, 
+  //     0, 
 
-      30, 60
-    );
-  }
+  //     30, 60
+  //   );
+  // }
 
-   public static class Kraken_Motor {
+  // public static class Kraken_Motor {
 
   //   public static final String MotorIdentification_LEADER = "BOB";// Change this to a helpful identification name
   //   public static final String MotorIdentification_FOLLOWER = "BOB2";// Change this to a helpful identification name
@@ -220,6 +298,127 @@ public final class Constants {
   //     0, 0
   // );
 
-  }
+//  }
 
-}
+//   public class ArmConstants {
+//     public static String NAME = "Rotary";
+
+//     public static boolean isFlex = false;
+
+//     public static int LEADER_ID = 1;
+//     public static int FOLLOWER_ID = 2;
+
+//     public static final Angle TOLERANCE = Degrees.of(2.0);
+
+//     public static final AngularVelocity CRUISE_VELOCITY = Units.RadiansPerSecond.of(1);
+//     public static final AngularAcceleration ACCELERATION = CRUISE_VELOCITY.div(0.1).per(Units.Second);
+//     public static final Velocity<AngularAccelerationUnit> JERK = ACCELERATION.per(Second);
+
+//     private static final double ROTOR_TO_SENSOR = (2.0 / 1.0);
+//     private static final double SENSOR_TO_MECHANISM = (2.0 / 1.0);
+
+//     public static final Translation3d OFFSET = Translation3d.kZero;
+
+//     public static final Angle MIN_ANGLE = Degrees.of(0.0);
+//     public static final Angle MAX_ANGLE = Rotations.of(.5);
+//     public static final Angle STARTING_ANGLE = Rotations.of(0.0);
+//     public static final Distance ARM_LENGTH = Meters.of(1.0);
+
+//     public static final RotaryMechCharacteristics CONSTANTS =
+//         new RotaryMechCharacteristics(OFFSET, ARM_LENGTH, MIN_ANGLE, MAX_ANGLE, STARTING_ANGLE);
+
+//     public static final Mass ARM_MASS = Kilograms.of(.01);
+//     public static final DCMotor DCMOTOR = DCMotor.getNeo550(1);
+//     public static final MomentOfInertia MOI = KilogramSquareMeters
+//         .of(SingleJointedArmSim.estimateMOI(ARM_LENGTH.in(Meters), ARM_MASS.in(Kilograms)));
+
+
+//        public static SparkMaxConfig configRev(){
+
+//         //Change this to mathc the encoder you are working with
+//         SparkMaxConfig config = new SparkMaxConfig();
+
+//         config.smartCurrentLimit(
+//             20,
+//             35,
+//             60
+//         )
+//         .inverted(false)
+//         .idleMode(true ? IdleMode.kBrake : IdleMode.kCoast)
+//         .signals.primaryEncoderPositionPeriodMs(20);
+        
+
+//         config.closedLoop
+//             // Position slot 0
+//             .p(5, ClosedLoopSlot.kSlot0)
+//             .i(0, ClosedLoopSlot.kSlot0)
+//             .d(0.25, ClosedLoopSlot.kSlot0)
+//             .iZone(0, ClosedLoopSlot.kSlot0)
+//             .iMaxAccum(0, ClosedLoopSlot.kSlot0)
+//             .outputRange(-1, 1, ClosedLoopSlot.kSlot0)
+//             .velocityFF(0.0,ClosedLoopSlot.kSlot0)
+
+//             .p(10, ClosedLoopSlot.kSlot1)
+//             .i(0, ClosedLoopSlot.kSlot1)
+//             .d(0, ClosedLoopSlot.kSlot1)
+//             .velocityFF(0, ClosedLoopSlot.kSlot1)
+//             .iZone(0, ClosedLoopSlot.kSlot1)
+//             .iMaxAccum(0, ClosedLoopSlot.kSlot1)
+//             .outputRange(-1,1, ClosedLoopSlot.kSlot1)
+
+            
+
+//         .maxMotion
+//             .maxAcceleration(1,ClosedLoopSlot.kSlot0)
+//             .maxVelocity(1,ClosedLoopSlot.kSlot0);
+
+//         config.softLimit
+//         .forwardSoftLimit(0.05)
+//         .forwardSoftLimitEnabled(false)
+//         .reverseSoftLimit(0)
+//         .reverseSoftLimitEnabled(false);
+
+//         //Place gear ratio in this
+//         config.encoder
+//         .positionConversionFactor(1)
+//         .velocityConversionFactor(1); 
+
+
+//             return config;
+//     }
+
+//     public static RotaryMechanismReal getReal()
+//     {
+//         return new RotaryMechanismReal(
+//             new RevMotorIO(NAME,
+//             LEADER_ID,
+//             isFlex,
+//             configRev()//,
+//             //new RevFollowerFollower(FOLLOWER_ID, true)
+            
+//               ),
+//             CONSTANTS
+//             );
+//     }
+
+//     public static RotaryMechanismSim getSim()
+//     {
+//       return new RotaryMechanismSim(
+//         new MotorIOSparkSim(
+//         NAME,
+//         LEADER_ID,
+//         isFlex,
+//         configRev(),
+//         DCMOTOR//,
+//         //new RevFollowerFollower(FOLLOWER_ID, true)
+//           ),
+//           DCMOTOR, MOI, false, CONSTANTS
+//         );
+//     }
+
+//     public static RotaryMechanism getReplay()
+//     {
+//         return new RotaryMechanism(NAME, CONSTANTS) {};
+//     }
+// }
+ }

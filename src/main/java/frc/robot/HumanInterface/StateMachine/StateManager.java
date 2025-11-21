@@ -6,7 +6,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.lib.Helpers.CommandHelper;
+import frc.lib.CamoBots.Helpers.CommandHelper;
 
 /**
  * StateManager:

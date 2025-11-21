@@ -4,9 +4,7 @@ import java.util.function.Supplier;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.commands.Exampled.SetSpeed;
-import frc.robot.subsystems.ClimberSubsystem;
-import frc.robot.subsystems.FlyWheelSubsystem;
+
 
 /**
  * State_Double:
@@ -20,8 +18,8 @@ import frc.robot.subsystems.FlyWheelSubsystem;
  */
 public class State_Double extends State_Template {
 
-    public State_Double(StateManager stateManager, FlyWheelSubsystem m_flyWheel, ClimberSubsystem m_climber) {
-        super(stateManager, m_flyWheel, m_climber);
+    public State_Double(StateManager stateManager) {
+        super(stateManager);
     }
 
     @Override
@@ -37,7 +35,7 @@ public class State_Double extends State_Template {
     @Override
     public Supplier<Command> Button_1() {
         // Return Zero command wrapped by helper to check validity
-        return  ()-> new SetSpeed(m_flyWheel, m_climber);
+        return  ()-> Commands.none();
     }
 
     // All other buttons currently have no associated commands and return no-ops

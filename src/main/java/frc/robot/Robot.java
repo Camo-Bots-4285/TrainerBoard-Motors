@@ -9,11 +9,12 @@ import org.littletonrobotics.junction.Logger;
 
 import com.pathplanner.lib.commands.PathfindingCommand;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.lib.CamoBots.Logger.AdvantageKitLogger;
 import frc.robot.HumanInterface.ElasticDisplay;
-import frc.robot.lib.Logger.AdvantageKitLogger;
 
 
 public class Robot extends LoggedRobot {
@@ -30,12 +31,13 @@ public class Robot extends LoggedRobot {
 
     m_robotContainer = new RobotContainer();
 
-
-//This will build and auto in the start to make pathplanner run faster
-// DO THIS AFTER CONFIGURATION OF YOUR DESIRED PATHFINDER
-PathfindingCommand.warmupCommand().schedule();
+    //This will build and auto in the start to make pathplanner run faster
+    // DO THIS AFTER CONFIGURATION OF YOUR DESIRED PATHFINDER
+    PathfindingCommand.warmupCommand().schedule();
 
     AdvantageKitLogger.initialize(this);
+
+    DriverStation.silenceJoystickConnectionWarning(!Robot.isReal());
 
   }
 
@@ -101,8 +103,6 @@ PathfindingCommand.warmupCommand().schedule();
     
     //Initail commands
     m_robotContainer.scheduleInitialCommands();
-
-
     
   }
 

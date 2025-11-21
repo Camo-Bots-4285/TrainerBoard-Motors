@@ -4,9 +4,7 @@ import java.util.function.Supplier;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.commands.SingleMotor.SingleSetSpeed;
-import frc.robot.subsystems.ClimberSubsystem;
-import frc.robot.subsystems.FlyWheelSubsystem;
+
 
 /**
  * State_Single:
@@ -18,8 +16,8 @@ public class State_Single extends State_Template {
 
     //private Supplier<Command> longcommand;
 
-    public State_Single(StateManager stateManager, FlyWheelSubsystem m_flyWheel, ClimberSubsystem m_climber) {
-        super(stateManager, m_flyWheel, m_climber);
+    public State_Single(StateManager stateManager) {
+        super(stateManager);
 
         //this.longcommand=()-> new ToPose(0, 0, 0);
     }
@@ -36,7 +34,7 @@ public class State_Single extends State_Template {
 
     @Override
     public Supplier<Command> Button_1() {
-        return  ()-> new SingleSetSpeed(m_flyWheel); // Run 'One' command
+        return  ()-> Commands.none();
     }
 
     @Override

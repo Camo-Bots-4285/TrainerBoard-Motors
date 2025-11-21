@@ -1,6 +1,7 @@
 plugins {
     id "java"
     id "edu.wpi.first.GradleRIO" version "2025.3.2"
+    id "io.freefair.lombok" version "8.6"//For W8
 }
 
 java {
@@ -76,6 +77,8 @@ dependencies {
     def akitJson = new groovy.json.JsonSlurper().parseText(new File(projectDir.getAbsolutePath() + "/vendordeps/AdvantageKit.json").text)
     annotationProcessor "org.littletonrobotics.akit:akit-autolog:$akitJson.version"
 
+    //For W8
+    implementation "org.apache.commons:commons-lang3:3.18.0"
 }
 
 test {

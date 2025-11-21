@@ -4,16 +4,19 @@
 
 package frc.robot;
 
+import java.util.Optional;
+
 import com.pathplanner.lib.auto.AutoBuilder;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.HumanInterface.CoDriver;
 import frc.robot.HumanInterface.Driver;
 import frc.robot.HumanInterface.ElasticDisplay;
-import frc.robot.HumanInterface.Tunning;
 import frc.robot.HumanInterface.StateMachine.StateManager;
-import frc.robot.subsystems.ClimberSubsystem;
-import frc.robot.subsystems.FlyWheelSubsystem;;
+import frc.robot.subsystems.Motors;
+import frc.robot.subsystems.revRotary.RevRotarySubsystem;
+import frc.robot.subsystems.revRotary.RevRotarySubsystemConstants;
+
 
 
 @SuppressWarnings("unused")
@@ -32,17 +35,20 @@ import frc.robot.subsystems.FlyWheelSubsystem;;
  *
  */
 public class RobotContainer {
+    //private final RevRotarySubsystem revRotary;
+    //private final ArmSubsytem m_FlyWheel = new ArmSubsytem();
+    private final Motors m_motor = new Motors();
 
     // Intatating subsytems
-    private final FlyWheelSubsystem m_flyWheel = new FlyWheelSubsystem();
-    private final ClimberSubsystem m_climber = new ClimberSubsystem();
+    // private final FlyWheelSubsystem m_flyWheel = new FlyWheelSubsystem();
+    // private final ClimberSubsystem m_climber = new ClimberSubsystem();
 
     // Intatating Control Interface Make sure to pass thought the subsytem dependecies
-    private final StateManager m_stateManger = new StateManager();
-    private final CoDriver m_coDriver = new CoDriver(m_flyWheel);
-    private final Driver m_DriverInterface = new Driver(m_stateManger, m_flyWheel, m_climber);
-    private final ElasticDisplay m_ElasticInterface = new ElasticDisplay();
-    private final Tunning m_TunningInterface = new Tunning(m_flyWheel);
+    // private final StateManager m_stateManger = new StateManager();
+    // private final CoDriver m_coDriver = new CoDriver(m_flyWheel);
+    // private final Driver m_DriverInterface = new Driver(m_stateManger, m_flyWheel, m_climber);
+    // private final ElasticDisplay m_ElasticInterface = new ElasticDisplay();
+    // private final Tunning m_TunningInterface = new Tunning(m_flyWheel);
 
     
     /**
@@ -52,12 +58,33 @@ public class RobotContainer {
      * Configures button bindings for driver and co-driver controls.
      * Also registers telemetry logging for the drivetrain subsystem.
      */
-    public RobotContainer() {
+    public RobotContainer() { 
+        // switch (Constants.currentMode) {
+        //     case REAL -> {
+        //         // Real robot, instantiate hardware IO implementations
+                
+        //         revRotary = new RevRotarySubsystem(RevRotarySubsystemConstants.getReal());
+        //     }
+
+        //     case SIM -> {
+        //         // Sim robot, instantiate physics sim IO implementations
+               
+        //         revRotary = new RevRotarySubsystem(RevRotarySubsystemConstants.getSim());
+        //     }
+
+        //     default -> {
+        //         // Replayed robot, disable IO implementations
+
+        //         revRotary = new RevRotarySubsystem(RevRotarySubsystemConstants.getReplay());
+
+        //     }
+        // }
 
         // Configure Bindings from HumanInterface 
-        m_DriverInterface.DriverBindings();
-        m_coDriver.CoDriverBindings();
+        // m_DriverInterface.DriverBindings();
+        // m_coDriver.CoDriverBindings();
 
+        //revRotary.setDefaultCommand(revRotary.setWiggle());
     }
 
     /**
