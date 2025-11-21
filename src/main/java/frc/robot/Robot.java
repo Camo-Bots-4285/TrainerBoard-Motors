@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.lib.CamoBots.Logger.AdvantageKitLogger;
+import frc.robot.Constants.Ports;
 import frc.robot.HumanInterface.ElasticDisplay;
 
 
@@ -29,25 +30,27 @@ public class Robot extends LoggedRobot {
   @Override
   public void robotInit() {
 
+    //Initalizes Advantage kit logger
+    AdvantageKitLogger.initialize(this, Ports.REV_pdh.id());
+
+    // Instantiate our RobotContainer. This will perform all our button bindings,
+    // and put our autonomous chooser on the dashboard.
     m_robotContainer = new RobotContainer();
+
+    //Turn off no controleller warning if not a real robot
+    DriverStation.silenceJoystickConnectionWarning(!Robot.isReal());
 
     //This will build and auto in the start to make pathplanner run faster
     // DO THIS AFTER CONFIGURATION OF YOUR DESIRED PATHFINDER
     PathfindingCommand.warmupCommand().schedule();
-
-    AdvantageKitLogger.initialize(this);
-
-    DriverStation.silenceJoystickConnectionWarning(!Robot.isReal());
-
   }
 
   @Override
   public void robotPeriodic() {
+
     CommandScheduler.getInstance().run(); 
 
-    AdvantageKitLogger.periodicUpdate();
-
-    Time = Timer.getFPGATimestamp();
+    Logger.recordOutput("Robot/Time", Timer.getMatchTime());
 
   }
 
@@ -69,7 +72,6 @@ public class Robot extends LoggedRobot {
     //   m_autonomousCommand.schedule();
     // }
 
-    autoStartTime=Time;
 
     Logger.recordOutput("Robot/In_Use", ElasticDisplay.mChooser_Robot.getSelected());
     Logger.recordOutput("Robot/Battery", ElasticDisplay.mChooser_Battery.getSelected());
@@ -78,13 +80,9 @@ public class Robot extends LoggedRobot {
 
   @Override
   public void autonomousPeriodic() {
-    autoTime = Time - autoStartTime+1;
 
     //  m_robotContainer.m_aprilTag.updatedPoseFromTagAuto();
   
-
-    autoTime = Math.abs(15-autoTime);
-    Logger.recordOutput("Robot/Time", autoTime);
     
   }
 
@@ -97,9 +95,6 @@ public class Robot extends LoggedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
-
-    teleOpStartTime = Time;
-
     
     //Initail commands
     m_robotContainer.scheduleInitialCommands();
@@ -107,12 +102,7 @@ public class Robot extends LoggedRobot {
   }
 
   @Override
-  public void teleopPeriodic() {
-    teleOpTime = Time - teleOpStartTime+1;
-
-    Logger.recordOutput("Robot/Time", teleOpTime);  
-
-  }
+  public void teleopPeriodic() {}
 
   @Override
   public void teleopExit() {}

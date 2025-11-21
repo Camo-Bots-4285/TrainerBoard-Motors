@@ -2,8 +2,6 @@ package frc.lib.W8.io.motor;
 
 import static edu.wpi.first.units.Units.*;
 
-import java.io.ObjectInputFilter.Config;
-
 import com.revrobotics.sim.SparkFlexSim;
 import com.revrobotics.sim.SparkMaxSim;
 import com.revrobotics.spark.SparkBase;
@@ -14,14 +12,12 @@ import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig;
 import edu.wpi.first.math.system.plant.DCMotor;
-import com.revrobotics.spark.SparkSim;
-
-import edu.wpi.first.units.AngularAccelerationUnit;
 import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Time;
-import edu.wpi.first.units.measure.Velocity;
+
+import com.revrobotics.spark.SparkSim;
+
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import frc.lib.W8.util.Device;
@@ -30,17 +26,6 @@ import frc.lib.W8.util.Device;
 /**
  * Simulated implementation of {@link MotorIORev} for REV Robotics motors using WPILib simulation.
  * Implements {@link MotorIOSim} to provide simulation-specific behavior.
- *
- * <p>
- * Constructor arguments:
- * <ul>
- * <li><b>name</b> - Name of the motor</li>
- * <li><b>id</b> - CAN ID of the motor</li>
- * <li><b>isFlex</b> - True if using SparkFlex, false for SparkMax</li>
- * <li><b>gearBox</b> - DCMotor gearbox model</li>
- * <li><b>config</b> - Motor configuration</li>
- * <li><b>followerData</b> - Varargs of follower motor data (ID and inversion)</li>
- * </ul>
  *
  * <p>
  * This class wraps a simulated SparkFlex or SparkMax motor, allowing position and velocity control
@@ -64,25 +49,27 @@ public class MotorIORevSim extends MotorIORev implements MotorIOSim {
      * Constructs a MotorIORevSim instance.
      * 
      * @param name Name of the motor
-     * @param id CAN ID of the motor
+     * @param CAN CAN device reference containing the motor's CAN ID
      * @param isFlex True if using SparkFlex, false for SparkMax
      * @param gearBox DCMotor gearbox model
-     * @param config Motor configuration
-     * @param followerData Varargs of follower motor data (ID and inversion)
+     * @param config Configuration to apply to the motor(s) including PID, limits, and gear ratios. 
+     *  Note: pass though a SparkFlex or SparkMax config or else max motion will not behave as expected
+     * @param followerData Configuration data for the follower motor(s), can be empty if no
+     *        followers
      * 
      * @see MotorIO
      */
     public MotorIORevSim(
         String name,
-        Device.CAN id,
+        Device.CAN CAN,
         boolean isFlex,
         double RotorToSensorRatio,
         double SensorToMechanismRatio,
         DCMotor gearBox,
         SparkBaseConfig config,
-        RevFollowerFollower... followerData)
+        RevFollower... followerData)
     {
-        super(name, id, isFlex, config,followerData);
+        super(name, CAN, isFlex, config,followerData);
 
         motor = this.getMotor();
         this.RotorToSensorRatio = RotorToSensorRatio;

@@ -1,59 +1,36 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
-package frc.robot.subsystems.revRotary;
+package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.*;
 
-
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.Voltage;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+
 import frc.lib.W8.io.motor.MotorIO.PIDSlot;
 import frc.lib.W8.mechanisms.rotary.RotaryMechanism;
-import frc.lib.W8.util.LoggedTunableNumber;
 import frc.lib.W8.util.LoggerHelper;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
-public class RevRotarySubsystem extends SubsystemBase {
+import frc.robot.Constants.DoubleMotorConstants;
+import frc.robot.Constants.DoubleMotorConstants.Setpoint;
+
+
+public class DoubleMotor extends SubsystemBase {
 
     private final RotaryMechanism io;
 
-    private static final LoggedTunableNumber STOW_SETPOINT = new LoggedTunableNumber("TEST", 0.0);
-    private static final LoggedTunableNumber RAISED_SETPOINT =
-        new LoggedTunableNumber("RAISED", 90);
-
-    @RequiredArgsConstructor
-    @SuppressWarnings("Immutable")
-    @Getter
-    public enum Setpoint {
-        STOW(Degrees.of(STOW_SETPOINT.get())),
-        RAISED(Degrees.of(RAISED_SETPOINT.get()));
-
-        private final Angle setpoint;
-    }
-
-
-    public RevRotarySubsystem(RotaryMechanism io)
+    public DoubleMotor(RotaryMechanism io)
     {
         this.io = io;
 
-        //setSetpoint(RevRotarySubsystemConstants.DEFAULT_SETPOINT).ignoringDisable(true).schedule();
+        setSetpoint(DoubleMotorConstants.DEFAULT_SETPOINT).ignoringDisable(true).schedule();
     }
 
     @Override
     public void periodic()
     {
-        LoggerHelper.recordCurrentCommand(RevRotarySubsystemConstants.NAME, this);
+        LoggerHelper.recordCurrentCommand(DoubleMotorConstants.NAME, this);
         io.periodic();
-
     }
        
 
@@ -61,15 +38,15 @@ public class RevRotarySubsystem extends SubsystemBase {
     {
         return this.runOnce(
             () -> io.runPosition(setpoint.getSetpoint(),
-                RevRotarySubsystemConstants.CRUISE_VELOCITY,
-                RevRotarySubsystemConstants.ACCELERATION, RevRotarySubsystemConstants.JERK,
+                DoubleMotorConstants.CRUISE_VELOCITY,
+                DoubleMotorConstants.ACCELERATION, DoubleMotorConstants.JERK,
                 PIDSlot.SLOT_0))
             .withName("Go To "  + setpoint.name() + " Setpoint");
     };
 
     public boolean nearGoal(Angle targetPosition)
     {
-        return io.nearGoal(targetPosition, RevRotarySubsystemConstants.TOLERANCE);
+        return io.nearGoal(targetPosition, DoubleMotorConstants.TOLERANCE);
     }
 
     // public Command waitUntilGoalCommand(Angle position)
@@ -94,8 +71,8 @@ public class RevRotarySubsystem extends SubsystemBase {
     public Command setWiggle() {
         return this.runOnce(
             () -> io.runPosition(Rotation.of(0.35),
-                RevRotarySubsystemConstants.CRUISE_VELOCITY,
-                RevRotarySubsystemConstants.ACCELERATION, RevRotarySubsystemConstants.JERK,
+                DoubleMotorConstants.CRUISE_VELOCITY,
+                DoubleMotorConstants.ACCELERATION, DoubleMotorConstants.JERK,
                 PIDSlot.SLOT_1))
             .withName("Go To "  + " Setpoint");
 
@@ -108,18 +85,18 @@ public class RevRotarySubsystem extends SubsystemBase {
         //     // execute: runs repeatedly
         //     () -> {
         //         double t = Timer.getFPGATimestamp() - startTime; // <-- zeroed time
-        //         double center = (RevRotarySubsystemConstants.MIN_ANGLE.in(Rotation) +
-        //                             RevRotarySubsystemConstants.MAX_ANGLE.in(Rotation)) / 2;
-        //         double amp = (-RevRotarySubsystemConstants.MIN_ANGLE.in(Rotation) +
-        //                             RevRotarySubsystemConstants.MAX_ANGLE.in(Rotation)) / 2;                    
+        //         double center = (DoubleMotorConstants.MIN_ANGLE.in(Rotation) +
+        //                             DoubleMotorConstants.MAX_ANGLE.in(Rotation)) / 2;
+        //         double amp = (-DoubleMotorConstants.MIN_ANGLE.in(Rotation) +
+        //                             DoubleMotorConstants.MAX_ANGLE.in(Rotation)) / 2;                    
     
         //         double position = amp * -Math.cos(t%(2*Math.PI)) + center;
     
         //         io.runPosition(
         //             Rotation.of(position),
-        //             RevRotarySubsystemConstants.CRUISE_VELOCITY,
-        //             RevRotarySubsystemConstants.ACCELERATION,
-        //             RevRotarySubsystemConstants.JERK,
+        //             DoubleMotorConstants.CRUISE_VELOCITY,
+        //             DoubleMotorConstants.ACCELERATION,
+        //             DoubleMotorConstants.JERK,
         //             PIDSlot.SLOT_0
         //         );
         //     },

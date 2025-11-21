@@ -4,19 +4,22 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.RotationsPerSecond;
+
 import java.util.Optional;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.Constants.DoubleMotorConstants;
+import frc.robot.Constants.SingleMotorConstants;
 import frc.robot.HumanInterface.CoDriver;
 import frc.robot.HumanInterface.Driver;
 import frc.robot.HumanInterface.ElasticDisplay;
 import frc.robot.HumanInterface.StateMachine.StateManager;
+import frc.robot.subsystems.DoubleMotor;
 import frc.robot.subsystems.Motors;
-import frc.robot.subsystems.revRotary.RevRotarySubsystem;
-import frc.robot.subsystems.revRotary.RevRotarySubsystemConstants;
-
+import frc.robot.subsystems.SingleMotor;
 
 
 @SuppressWarnings("unused")
@@ -35,9 +38,12 @@ import frc.robot.subsystems.revRotary.RevRotarySubsystemConstants;
  *
  */
 public class RobotContainer {
-    //private final RevRotarySubsystem revRotary;
+
+    private final SingleMotor m_singleMotor;
+    private final DoubleMotor m_doubleMotor;
+
     //private final ArmSubsytem m_FlyWheel = new ArmSubsytem();
-    private final Motors m_motor = new Motors();
+    //private final Motors m_motor = new Motors();
 
     // Intatating subsytems
     // private final FlyWheelSubsystem m_flyWheel = new FlyWheelSubsystem();
@@ -59,32 +65,32 @@ public class RobotContainer {
      * Also registers telemetry logging for the drivetrain subsystem.
      */
     public RobotContainer() { 
-        // switch (Constants.currentMode) {
-        //     case REAL -> {
-        //         // Real robot, instantiate hardware IO implementations
-                
-        //         revRotary = new RevRotarySubsystem(RevRotarySubsystemConstants.getReal());
-        //     }
+        switch (Constants.currentMode) {
+            case REAL -> {
+                // Real robot, instantiate hardware IO implementations
+                m_singleMotor = new SingleMotor(SingleMotorConstants.getReal());
+                m_doubleMotor = new DoubleMotor(DoubleMotorConstants.getReal());
+            }
 
-        //     case SIM -> {
-        //         // Sim robot, instantiate physics sim IO implementations
-               
-        //         revRotary = new RevRotarySubsystem(RevRotarySubsystemConstants.getSim());
-        //     }
+            case SIM -> {
+                // Sim robot, instantiate physics sim IO implementations
+                m_singleMotor = new SingleMotor(SingleMotorConstants.getSim());
+                m_doubleMotor = new DoubleMotor(DoubleMotorConstants.getSim());
+            }
 
-        //     default -> {
-        //         // Replayed robot, disable IO implementations
-
-        //         revRotary = new RevRotarySubsystem(RevRotarySubsystemConstants.getReplay());
-
-        //     }
-        // }
+            default -> {
+                // Replayed robot, disable IO implementations
+                m_singleMotor = new SingleMotor(SingleMotorConstants.getReplay());
+                m_doubleMotor = new DoubleMotor(DoubleMotorConstants.getReplay());
+            }
+        }
 
         // Configure Bindings from HumanInterface 
         // m_DriverInterface.DriverBindings();
         // m_coDriver.CoDriverBindings();
 
-        //revRotary.setDefaultCommand(revRotary.setWiggle());
+        m_singleMotor.setDefaultCommand(m_singleMotor.setVelocity(SingleMotorConstants.Setpoint.INTAKE));
+        m_doubleMotor.setDefaultCommand(getAutonomousCommand());
     }
 
     /**

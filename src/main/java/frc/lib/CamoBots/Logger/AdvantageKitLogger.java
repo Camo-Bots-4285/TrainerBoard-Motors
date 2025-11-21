@@ -1,23 +1,20 @@
 package frc.lib.CamoBots.Logger;
 
-import java.util.HashSet;
-import java.util.Set;
-
+import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.inputs.LoggedPowerDistribution;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
+import org.littletonrobotics.junction.wpilog.WPILOGReader;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.Robot;
+import frc.robot.Constants;
 import frc.robot.Constants.BuildConstants;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
-import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj2.command.Command;
+
 
 public class AdvantageKitLogger {
-    private final static Set<Command> activeCommands = new HashSet<>();
     
  /**
  * Initializes the AdvantageKit logging system with metadata, data receivers,
@@ -25,14 +22,14 @@ public class AdvantageKitLogger {
  * <p>
  * This method sets up metadata such as project and build info,
  * configures data receivers differently depending on whether the robot is
- * running in real or simulation mode, and registers listeners with the
- * CommandScheduler to track active commands for logging purposes.
+ * running in real or simulation mode
  * </p>
  *
  * @param m_robot The robot instance used to determine environment (real vs simulation)
  *                and control timing behavior in simulation.
+ * @param REV_PDM_ID ID for the REV power diribution module for logging
  */
-    public static void initialize(Robot m_robot) {
+    public static void initialize(Robot m_robot, int REV_PDM_ID) {
         DataLogManager.start();
 
         // Metadata
@@ -43,63 +40,41 @@ public class AdvantageKitLogger {
         Logger.recordMetadata("Git_Branch", BuildConstants.GIT_BRANCH);
 
         switch (BuildConstants.DIRTY) {
-            case 0:
-                Logger.recordMetadata("GitDirty", "All changes committed");
-                break;
-            case 1:
-                Logger.recordMetadata("GitDirty", "Uncommitted changes");
-                break;
-            default:
-                Logger.recordMetadata("GitDirty", "Unknown");
-                break;
+            case 0 -> Logger.recordMetadata("GitDirty", "All changes committed");
+            case 1 -> Logger.recordMetadata("GitDirty", "Uncommitted changes");
+            default -> Logger.recordMetadata("GitDirty", "Unknown");
+
+        }
+                // Set up data receivers & replay source
+        switch (Constants.currentMode) {
+            case REAL -> {
+                // Running on a real robot, log to a USB stick ("/U/logs")
+                Logger.addDataReceiver(new WPILOGWriter());
+                Logger.addDataReceiver(new NT4Publisher());
+                LoggedPowerDistribution.getInstance(REV_PDM_ID, ModuleType.kRev);
+            }
+
+            case SIM -> {
+                // Running a physics simulator, log to NT
+                Logger.addDataReceiver(new WPILOGWriter());
+                Logger.addDataReceiver(new NT4Publisher());
+            }
+
+            case REPLAY -> {
+                // Replaying a log, set up replay source
+                m_robot.setUseTiming(false); // Run as fast as possible
+                String logPath = LogFileUtil.findReplayLog();
+                Logger
+                    .setReplaySource(new WPILOGReader(logPath));
+                Logger
+                    .addDataReceiver(
+                        new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_sim")));
+            }
         }
 
-        if (RobotBase.isReal()) {
-            Logger.addDataReceiver(new WPILOGWriter()); // Log to USB stick
-            Logger.addDataReceiver(new NT4Publisher()); // Publish to NetworkTables
-            LoggedPowerDistribution.getInstance(50, ModuleType.kRev); // Example CAN ID 50
-        } else {
-            // m_robot.setUseTiming(false); // Run as fast as possible
-
-            // String logPath = LogFileUtil.findReplayLog(); // Replay log path
-            // Logger.setReplaySource(new WPILOGReader(logPath));
-            // Logger.addDataReceiver(new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_sim")));
-
-            Logger.addDataReceiver(new WPILOGWriter()); // Log to USB stick
-            Logger.addDataReceiver(new NT4Publisher()); // Publish to NetworkTables
-        }
 
         Logger.start();
-    
-        CommandScheduler scheduler = CommandScheduler.getInstance();
-    
-        scheduler.onCommandInitialize(command -> {
-            activeCommands.add(command);
-            Logger.recordOutput("6-Commands/" + command.getName(), true);
-        });
-        scheduler.onCommandFinish(command -> {
-            activeCommands.remove(command);
-            Logger.recordOutput("6-Commands/" + command.getName(), false);
-        });
-        scheduler.onCommandInterrupt(command -> {
-            activeCommands.remove(command);
-        Logger.recordOutput("6-Commands/" + command.getName(), false);
-    });
-  }
 
-    /**
-     * Periodically updates the AdvantageKit logger with the status of currently
-     * active commands.
-     * <p>
-     * This method should be called regularly (e.g., in robotPeriodic) to
-     * continually record which commands are currently active, enabling
-     * more detailed command activity logging for debugging and replay.
-     * </p>
-     */
-    public static void periodicUpdate() {
-        for (Command command : activeCommands) {
-            Logger.recordOutput("6-Commands/" + command.getName(), true);
-        }
-    }
+  }
 
 }

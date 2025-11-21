@@ -31,6 +31,10 @@ import frc.lib.W8.util.Device;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 
+/**
+ * Abstraction for a REV motor implementing the {@link MotorIO} interface. Wraps motor
+ * setup, control modes.
+ */
 public class MotorIORev implements MotorIO {
 
     public SparkBase motor;
@@ -96,72 +100,81 @@ public class MotorIORev implements MotorIO {
             com.revrobotics.spark.SparkBase.ControlType.kDutyCycle);
     }
 
-    public record RevFollowerFollower(Device.CAN id, boolean opposesLeader) {
+    /**
+     * Configuration data for a REV motor that follows another REV motor.
+     * 
+     * <p>
+     * Follower motors mirror the output of a main motor, useful for mechanisms that require
+     * multiple motors working together (like a dual-motor elevator).
+     * 
+     * @param id The CAN device ID of the follower motor
+     * @param opposesMain Whether this follower should spin opposite to the main motor
+     */
+    public record RevFollower(Device.CAN id, boolean opposesMain) 
+    {
+
     }
 
-
-
     /**
-     * Constructor for a standalone leader motor. This motor is configured as the primary motor in a
-     * system and can be manually controlled by the user. It also configures various settings for
-     * motion profiling and closed-loop control.
-     *
-     * @param id The unique identifier for the motor (CAN ID).
-     * @param isFlex Boolean indicating whether the motor is a SparkFlex (true) or a SparkMax
-     *        (false).
-     * @param gearRatio The gear ratio applied to the motor's output.
-     * @param wheelRadius The radius of the wheel attached to the motor, used for motion
-     *        calculations.
-     * @param isBrake Boolean indicating whether the motor should use brake mode (true) or coast
-     *        mode (false).
-     * @param inverted Boolean indicating whether the motor should be inverted relative to the
-     *        control signal.
-     * @param motorType The type of motor (e.g., brushless, brushed) to configure.
-     * @param motionProfile The motion profile settings for the motor, including PID and velocity
-     *        parameters.
-     *
-     * @see MotorIO
+     * Constructs and initializes a REV motor.
+     * 
+     * <p>
+     * This constructor applies the provided configuration to the main motor and all followers. It
+     * sets up the follower relationship, initializes telemetry, and configures
+     * encoder. All followers must be on the same CAN bus as the main motor.
+     * 
+     * @param name The name of the motor(s) for logging and identification
+     * @param CAN the CAN device reference containing the motor's CAN ID
+     * @param isFlex True if using SparkFlex, false for SparkMax
+     * @param config Configuration to apply to the motor(s) including PID, limits, and gear ratios. 
+     *  Note: pass though a SparkFlex or SparkMax config or else max motion will not behave as expected
+     * @param followerData Configuration data for the follower motor(s), can be empty if no
+     *        followers
      */
+    @SuppressWarnings("resource")
     public MotorIORev(
         String name,
-        Device.CAN id,
+        Device.CAN CAN,
         boolean isFlex,
         SparkBaseConfig config,
-        RevFollowerFollower... followerData)
+        RevFollower... followerData)
     {
         this.name = name;
 
+        // Initialize motor based on whether it's flex or not
         if (isFlex) {
-            motor = new SparkFlex(id.id(), MotorType.kBrushless);
+            motor = new SparkFlex(CAN.id(), MotorType.kBrushless);
         } else {
-            motor = new SparkMax(id.id(), MotorType.kBrushless);
+            motor = new SparkMax(CAN.id(), MotorType.kBrushless);
         }
 
+        //Define controller and encoder
         controller = motor.getClosedLoopController();
         encoder = motor.getEncoder();
 
+        //Applies config to the motor
         motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
+        //For loop that iterates for each follower mototr
          for (int i = 0; i < followerData.length; i++) {
-            int id_follower = followerData[i].id.id();
-            boolean opposesLeader = followerData[i].opposesLeader;
-
             SparkBase motor_follower;
             SparkBaseConfig config_follower;
     
-            // Initialize motor and config based on whether it's flex or not
+            // Initialize motor and new config based on whether it's flex or not
             if (isFlex) {
-                motor_follower = new SparkFlex(id_follower, MotorType.kBrushless);
+                motor_follower = new SparkFlex(followerData[i].id.id(), MotorType.kBrushless);
                 config_follower = new SparkFlexConfig();
             } else {
-                motor_follower = new SparkMax(id_follower, MotorType.kBrushless);
+                motor_follower = new SparkMax(followerData[i].id.id(), MotorType.kBrushless);
                 config_follower = new SparkMaxConfig();
             }
     
+            //Defines the config to follow main motor
             config_follower
             .apply(config)
-            .follow(id.id(), opposesLeader);
+            .follow(CAN.id(), followerData[i].opposesMain);
     
+            //Applies config to follower motor
             motor_follower.configure(config_follower, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
         }
