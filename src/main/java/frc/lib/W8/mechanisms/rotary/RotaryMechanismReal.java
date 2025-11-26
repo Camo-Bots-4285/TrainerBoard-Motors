@@ -97,6 +97,12 @@ public class RotaryMechanismReal extends RotaryMechanism {
     }
 
     @Override
+    public void setEncoderPosition(Angle position)
+    {
+        io.setEncoderPosition(position);
+    }
+
+    @Override
     public Angle getPosition()
     {
         return inputs.position;
@@ -107,4 +113,6 @@ public class RotaryMechanismReal extends RotaryMechanism {
     {
         return inputs.velocity;
     }
+
+
 }

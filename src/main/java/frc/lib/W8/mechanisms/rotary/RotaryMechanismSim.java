@@ -87,8 +87,7 @@ public class RotaryMechanismSim extends RotaryMechanism {
         lastTime = currentTime;
 
         io.setPosition(Radians.of(sim.getAngleRads()));
-        io.setRotorVelocity(RadiansPerSecond.of(sim.getVelocityRadPerSec())
-            .times(io.getRotorToSensorRatio() * io.getSensorToMechanismRatio()));
+        io.setVelocity(RadiansPerSecond.of(sim.getVelocityRadPerSec()));
 
         Logger.recordOutput(io.getName() + " Sim Angle", sim.getAngleRads());
 

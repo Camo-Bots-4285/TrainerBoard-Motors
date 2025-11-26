@@ -1,0 +1,40 @@
+{
+  "name": "Robot_MotorTrainerBoard",
+   "rotations": [
+{
+  "axis": "z",
+  "degrees": -90
+},
+
+{
+  "axis": "x",
+  "degrees": -180
+}
+],
+  "position": [],
+  "cameras": [],
+
+  "components": [
+    {
+      "zeroedRotations": [
+        {
+          "axis": "y",
+          "degrees": 180
+        }
+      ],
+      "zeroedPosition": [0,0,0
+      ]
+    },
+
+    {
+      "zeroedRotations": [
+        {
+          "axis": "y",
+          "degrees": -90
+        }
+      ],
+      "zeroedPosition": [0,0,0
+      ]
+    }
+  ]
+} 

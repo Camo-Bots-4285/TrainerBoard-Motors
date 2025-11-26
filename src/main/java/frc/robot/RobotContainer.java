@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Rotation;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import java.util.Optional;
@@ -89,8 +90,8 @@ public class RobotContainer {
         // m_DriverInterface.DriverBindings();
         // m_coDriver.CoDriverBindings();
 
-        m_singleMotor.setDefaultCommand(m_singleMotor.setVelocity(SingleMotorConstants.Setpoint.INTAKE));
-        m_doubleMotor.setDefaultCommand(getAutonomousCommand());
+        m_singleMotor.setDefaultCommand(m_singleMotor.setSetpoint(Rotation.of(1)));
+        //m_doubleMotor.setDefaultCommand(m_doubleMotor.setSetpoint(DoubleMotorConstants.Setpoint.RAISED));
     }
 
     /**

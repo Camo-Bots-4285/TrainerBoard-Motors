@@ -94,9 +94,21 @@ public class FlywheelMechanismReal implements FlywheelMechanism {
     }
 
     @Override
+    public void setEncoderPosition(Angle position)
+    {
+        io.setEncoderPosition(position);
+    }
+
+    @Override
     public Current getTorqueCurrent()
     {
         return inputs.torqueCurrent;
+    }
+
+    @Override
+    public Angle getPosition()
+    {
+        return inputs.position;
     }
 
     @Override

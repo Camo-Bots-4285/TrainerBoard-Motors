@@ -63,9 +63,9 @@ public class MotorIOTalonFXSim extends MotorIOTalonFX implements MotorIOSim {
     }
 
     @Override
-    public void setRotorVelocity(AngularVelocity velocity)
+    public void setVelocity(AngularVelocity velocity)
     {
-        simState.setRotorVelocity(velocity);
+        simState.setRotorVelocity(velocity.times(rotorToSensorRatio * sensorToMechanismRatio));
     }
 
     @Override

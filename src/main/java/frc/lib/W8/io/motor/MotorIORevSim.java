@@ -89,13 +89,13 @@ public class MotorIORevSim extends MotorIORev implements MotorIOSim {
     @Override
     public void setPosition(Angle position)
     {
-        simState.setPosition(position.in(Rotations));
+      //  simState.setPosition(position.in(Rotations));
 
     }
 
 
     @Override
-    public void setRotorVelocity(AngularVelocity velocity)
+    public void setVelocity(AngularVelocity velocity)
     {
         simState.setVelocity(velocity.in(RotationsPerSecond));
 
@@ -116,6 +116,13 @@ public class MotorIORevSim extends MotorIORev implements MotorIOSim {
     @Override
     public void updateInputs(MotorInputs inputs)
     {
+
+        inputs.position = Rotation.of(encoder.getPosition());
+        inputs.velocity = RotationsPerSecond.of(encoder.getVelocity());
+        inputs.appliedVoltage = Volts.of(simState.getAppliedOutput() * simState.getBusVoltage());
+        inputs.supplyCurrent = Amps.of(simState.getMotorCurrent());
+        inputs.temperature = Celsius.of(motor.getMotorTemperature());
+
         Time currentTime = Seconds.of(Timer.getTimestamp());
         double deltaTime = currentTime.minus(lastTime).in(Seconds); 
 
@@ -125,12 +132,6 @@ public class MotorIORevSim extends MotorIORev implements MotorIOSim {
             simState.getVelocity(),
             simState.getBusVoltage(),
             deltaTime);
-
-        inputs.position = Rotation.of(encoder.getPosition());
-        inputs.velocity = RotationsPerSecond.of(encoder.getVelocity());
-        inputs.appliedVoltage = Volts.of(simState.getAppliedOutput() * simState.getBusVoltage());
-        inputs.supplyCurrent = Amps.of(simState.getMotorCurrent());
-        inputs.temperature = Celsius.of(motor.getMotorTemperature());
 
         lastTime = currentTime;
     }

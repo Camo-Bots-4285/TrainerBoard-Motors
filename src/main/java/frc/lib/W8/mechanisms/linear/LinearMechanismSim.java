@@ -82,7 +82,7 @@ public class LinearMechanismSim extends LinearMechanism {
 
         io.setPosition(converter.toAngle(Meters.of(sim.getPositionMeters())));
 
-        io.setRotorVelocity(
+        io.setVelocity(
             converter.toAngle(Meters.of(sim.getVelocityMetersPerSecond())).per(Seconds));
 
         io.updateInputs(inputs);

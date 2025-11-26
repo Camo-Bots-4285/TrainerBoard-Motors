@@ -51,7 +51,7 @@ public interface MotorIOSim extends MotorIO {
      * 
      * @param velocity The new motor rotor velocity from the physics simulation
      */
-    public default void setRotorVelocity(AngularVelocity velocity)
+    public default void setVelocity(AngularVelocity velocity)
     {}
 
     /**

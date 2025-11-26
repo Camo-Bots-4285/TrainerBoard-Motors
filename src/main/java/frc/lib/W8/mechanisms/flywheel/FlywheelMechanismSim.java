@@ -83,7 +83,7 @@ public class FlywheelMechanismSim implements FlywheelMechanism {
 
         lastTime = currentTime;
 
-        io.setRotorVelocity(sim.getAngularVelocity());
+        io.setVelocity(sim.getAngularVelocity());
         io.setRotorAcceleration(sim.getAngularAcceleration());
 
         // Angular displacement kinematic equation (θ = ω₀t + (1/2)αt²)'

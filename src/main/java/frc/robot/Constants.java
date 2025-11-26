@@ -25,6 +25,7 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.AngularAccelerationUnit;
 import edu.wpi.first.units.Units;
+import edu.wpi.first.units.measure.Acceleration;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -32,10 +33,12 @@ import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.Mass;
 import edu.wpi.first.units.measure.MomentOfInertia;
 import edu.wpi.first.units.measure.Velocity;
+import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 
 import com.revrobotics.spark.ClosedLoopSlot;
-import com.revrobotics.spark.config.SparkFlexConfig;
+import com.revrobotics.spark.config.SparkMaxConfig;
+import com.revrobotics.spark.config.MAXMotionConfig.MAXMotionPositionMode;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 
@@ -105,18 +108,18 @@ public final class Constants {
     }
     
     public class SingleMotorConstants {
-        public static String NAME = "1_SingleMotor";
+        public static final String NAME = "1_SingleMotor";
 
-        public static boolean isFlex = false;
+        public static final boolean isFlex = false;
     
         public static final AngularVelocity TOLERANCE = RotationsPerSecond.of(0.01);
     
-        public static final AngularVelocity CRUISE_VELOCITY = Units.RotationsPerSecond.of(500/60/100);
-        public static final AngularAcceleration ACCELERATION =Units.RotationsPerSecondPerSecond.of(750/100/60/60);
+        public static final AngularVelocity CRUISE_VELOCITY = RotationsPerSecond.of(0.2);
+        public static final AngularAcceleration ACCELERATION = RotationsPerSecondPerSecond.of(0.1);
         public static final Velocity<AngularAccelerationUnit> JERK = ACCELERATION.per(Second);
     
         private static final double ROTOR_TO_SENSOR = (1.0 / 1.0);
-        private static final double SENSOR_TO_MECHANISM = (100.0 / 8.0);
+        private static final double SENSOR_TO_MECHANISM = (100.0 / 1.0);
     
         public static final Translation3d OFFSET = Translation3d.kZero;
     
@@ -129,15 +132,15 @@ public final class Constants {
             new RotaryMechCharacteristics(OFFSET, ARM_LENGTH, MIN_ANGLE, MAX_ANGLE, STARTING_ANGLE);
     
         public static final Mass ARM_MASS = Kilograms.of(0.01);
-        public static final DCMotor DCMOTOR = DCMotor.getNEO(1);
+        public static final DCMotor DCMOTOR = DCMotor.getNeo550(1);
         public static final MomentOfInertia MOI = KilogramSquareMeters
             .of(SingleJointedArmSim.estimateMOI(ARM_LENGTH.in(Meters), ARM_MASS.in(Kilograms)));
     
         public static final Setpoint DEFAULT_SETPOINT = Setpoint.STOP;
 
-        public static SparkFlexConfig getREVConfig()
+        public static SparkMaxConfig getREVConfig()
         {
-            SparkFlexConfig config = new SparkFlexConfig();
+            SparkMaxConfig config = new SparkMaxConfig();
     
             config.smartCurrentLimit(
                 20,
@@ -145,39 +148,53 @@ public final class Constants {
                 60
             )
             .voltageCompensation(12.0)
-            .idleMode(true ? IdleMode.kBrake : IdleMode.kCoast)
+            .idleMode(false ? IdleMode.kBrake : IdleMode.kCoast)
             .inverted(false)
             .signals.primaryEncoderPositionPeriodMs(20);
+
+            //Place gear ratio in this
+            config.encoder
+            .positionConversionFactor(1/SENSOR_TO_MECHANISM)
+            .velocityConversionFactor(1/SENSOR_TO_MECHANISM/60); 
+
+            config.softLimit
+            .forwardSoftLimit(MAX_ANGLE.in(Rotations))
+            .forwardSoftLimitEnabled(false)
+            .reverseSoftLimit(MIN_ANGLE.in(Rotations))
+            .reverseSoftLimitEnabled(false);
     
             config.closedLoop
                 // Position slot 0
-                .pid(0.052554, 0, 0.029932,ClosedLoopSlot.kSlot0)
+                .p(10.0, ClosedLoopSlot.kSlot0)
+                .i(0.0, ClosedLoopSlot.kSlot0)
+                .d(0.0, ClosedLoopSlot.kSlot0)
+                .velocityFF(0.0, ClosedLoopSlot.kSlot0)
+                .iZone(0, ClosedLoopSlot.kSlot0)
+                .iMaxAccum(0.0, ClosedLoopSlot.kSlot0)
+                .outputRange(-1,1, ClosedLoopSlot.kSlot0)
     
                 //Velocity slot 1
-                .p(1.2939E-10, ClosedLoopSlot.kSlot1)
-                .i(0.00000015, ClosedLoopSlot.kSlot1)
+                .p(0.01, ClosedLoopSlot.kSlot1)
+                .i(0.0, ClosedLoopSlot.kSlot1)
                 .d(0.0, ClosedLoopSlot.kSlot1)
-                .velocityFF( 0.0000815, ClosedLoopSlot.kSlot1)
-                .iZone(75.0, ClosedLoopSlot.kSlot1)
-                .iMaxAccum(0.003, ClosedLoopSlot.kSlot1)
+                .velocityFF( 0, ClosedLoopSlot.kSlot1)
+                .iZone(0, ClosedLoopSlot.kSlot1)
+                .iMaxAccum(0.0, ClosedLoopSlot.kSlot1)
                 .outputRange(-1,1, ClosedLoopSlot.kSlot1)
     
             .maxMotion
-            //Global Motion control
-                .maxVelocity(CRUISE_VELOCITY.in(RotationsPerSecond))
-                .maxAcceleration(ACCELERATION.in(RotationsPerSecondPerSecond))
-                .allowedClosedLoopError(TOLERANCE.in(RotationsPerSecond));
+            //Position
+                .maxVelocity(ACCELERATION.in(RotationsPerSecondPerSecond)*ROTOR_TO_SENSOR*SENSOR_TO_MECHANISM,ClosedLoopSlot.kSlot0)
+                .maxAcceleration(CRUISE_VELOCITY.in(RotationsPerSecond)*4*ROTOR_TO_SENSOR*SENSOR_TO_MECHANISM,ClosedLoopSlot.kSlot0)
+                .allowedClosedLoopError(TOLERANCE.in(RotationsPerSecond),ClosedLoopSlot.kSlot0)
                 
-            config.softLimit
-            .forwardSoftLimit(MAX_ANGLE.in(Rotations))
-            .forwardSoftLimitEnabled(true)
-            .reverseSoftLimit(MIN_ANGLE.in(Rotations))
-            .reverseSoftLimitEnabled(true);
+            //Velocity
+                .maxAcceleration(ACCELERATION.in(RotationsPerSecondPerSecond),ClosedLoopSlot.kSlot1)
+                .allowedClosedLoopError(TOLERANCE.in(RotationsPerSecond),ClosedLoopSlot.kSlot1);
+                
+
     
-            //Place gear ratio in this
-            config.encoder
-            .positionConversionFactor(SENSOR_TO_MECHANISM)
-            .velocityConversionFactor(SENSOR_TO_MECHANISM/60); 
+
     
     
             return config;
@@ -186,7 +203,7 @@ public final class Constants {
 
         public static FlywheelMechanismReal getReal()
         {
-            MotorIO io = new MotorIORev(NAME, Ports.DoubleMotorMain, isFlex, getREVConfig());
+            MotorIO io = new MotorIORev(NAME, Ports.SingleMotor, isFlex, getREVConfig());
     
             return new FlywheelMechanismReal(io);
         }
@@ -195,7 +212,7 @@ public final class Constants {
         {
             MotorIOSim io = new MotorIORevSim(
                 NAME,
-                Ports.DoubleMotorMain,
+                Ports.SingleMotor,
                 isFlex,
                 ROTOR_TO_SENSOR,
                 SENSOR_TO_MECHANISM,
@@ -211,16 +228,16 @@ public final class Constants {
             return new FlywheelMechanism() {};
         }
 
-    private static final LoggedTunableNumber RAISED_SETPOINT = new LoggedTunableNumber("RAISED", 1);
-    private static final LoggedTunableNumber UNJAM_SETPOINT = new LoggedTunableNumber("TEST", -1);
+    // private static final LoggedTunableNumber RAISED_SETPOINT = new LoggedTunableNumber("RAISED", 1);
+    // private static final LoggedTunableNumber UNJAM_SETPOINT = new LoggedTunableNumber("TEST", -1);
 
         @RequiredArgsConstructor
         @SuppressWarnings("Immutable")
         @Getter
         public enum Setpoint {
             STOP(RotationsPerSecond.of(0)),
-            INTAKE(RotationsPerSecond.of(RAISED_SETPOINT.get())),
-            UNJAM(RotationsPerSecond.of(UNJAM_SETPOINT.get()));
+            INTAKE(RotationsPerSecond.of(0.001)),
+            UNJAM(RotationsPerSecond.of(-0.25));
 
             private final AngularVelocity setpoint;
         }
@@ -231,29 +248,31 @@ public final class Constants {
 
         public static boolean isFlex = false;
     
-        public static final Angle TOLERANCE =Rotations.of(0.01);
+        public static final AngularVelocity TOLERANCE =RotationsPerSecond.of(0.01);
     
-        public static final AngularVelocity CRUISE_VELOCITY = Units.RotationsPerSecond.of(1500/60);
-        public static final AngularAcceleration ACCELERATION =Units.RotationsPerSecondPerSecond.of(750/60/60);
+        public static final AngularVelocity CRUISE_VELOCITY = Units.RotationsPerSecond.of(204);
+        public static final AngularAcceleration ACCELERATION = Units.RotationsPerSecondPerSecond.of(204);
     public static final Velocity<AngularAccelerationUnit> JERK = ACCELERATION.per(Second);
     
         private static final double ROTOR_TO_SENSOR = (1.0 / 1.0);
-        private static final double SENSOR_TO_MECHANISM = (300.0 / 8.0);
+        private static final double SENSOR_TO_MECHANISM = (204.0 / 1.0);
     
         public static final Translation3d OFFSET = Translation3d.kZero;
     
         public static final Angle MIN_ANGLE = Rotations.of(0.0);
-        public static final Angle MAX_ANGLE = Rotations.of(12);
+        public static final Angle MAX_ANGLE = Rotations.of(10.0);
         public static final Angle STARTING_ANGLE = Rotations.of(0.0);
-        public static final Distance ARM_LENGTH = Meters.of(0.05);
+        public static final Distance WHEEL_RADIUS = Meters.of(0.5);
     
         public static final RotaryMechCharacteristics CONSTANTS =
-            new RotaryMechCharacteristics(OFFSET, ARM_LENGTH, MIN_ANGLE, MAX_ANGLE, STARTING_ANGLE);
+            new RotaryMechCharacteristics(OFFSET, WHEEL_RADIUS, MIN_ANGLE, MAX_ANGLE, STARTING_ANGLE);
     
-        public static final Mass ARM_MASS = Kilograms.of(0.01);
+        public static final Mass WHEEL_MASS = Kilograms.of(5.0);
         public static final DCMotor DCMOTOR = DCMotor.getNEO(2);
+
         public static final MomentOfInertia MOI = KilogramSquareMeters
-            .of(SingleJointedArmSim.estimateMOI(ARM_LENGTH.in(Meters), ARM_MASS.in(Kilograms)));
+            .of(0.5*WHEEL_MASS.in(Kilogram)*Math.pow(WHEEL_RADIUS.in(Meter), 2));
+
     
         public static final Setpoint DEFAULT_SETPOINT = Setpoint.STOW;
 
@@ -276,9 +295,9 @@ public final class Constants {
          * 
          * @return A configured TalonFXConfiguration object ready to apply to a motor controller
          */
-        public static SparkFlexConfig getREVConfig()
+        public static SparkMaxConfig getREVConfig()
         {
-            SparkFlexConfig config = new SparkFlexConfig();
+            SparkMaxConfig config = new SparkMaxConfig();
     
             config.smartCurrentLimit(
                 20,
@@ -286,13 +305,15 @@ public final class Constants {
                 60
             )
             .voltageCompensation(12.0)
-            .idleMode(true ? IdleMode.kBrake : IdleMode.kCoast)
+            .idleMode(false ? IdleMode.kBrake : IdleMode.kCoast)
             .inverted(false)
             .signals.primaryEncoderPositionPeriodMs(20);
+
+
     
             config.closedLoop
                 // Position slot 0
-                .pid(1, 0, 0.0,ClosedLoopSlot.kSlot0)
+                .pid(5, 0, 0.002,ClosedLoopSlot.kSlot0)
     
                 //Velocity slot 1
                 .p(1.2939E-10, ClosedLoopSlot.kSlot1)
@@ -305,22 +326,21 @@ public final class Constants {
     
             .maxMotion
             //Global Motion control
-                .maxVelocity(CRUISE_VELOCITY.in(RotationsPerSecond))
-                .maxAcceleration(ACCELERATION.in(RotationsPerSecondPerSecond))
-                .allowedClosedLoopError(TOLERANCE.in(Rotations));
-            
+                .maxVelocity(CRUISE_VELOCITY.in(RotationsPerSecond),ClosedLoopSlot.kSlot0)
+                .maxAcceleration(ACCELERATION.in(RotationsPerSecondPerSecond),ClosedLoopSlot.kSlot0)
+                .allowedClosedLoopError(TOLERANCE.in(RotationsPerSecond),ClosedLoopSlot.kSlot0);
     
             config.softLimit
             .forwardSoftLimit(MAX_ANGLE.in(Rotations))
             .forwardSoftLimitEnabled(true)
             .reverseSoftLimit(MIN_ANGLE.in(Rotations))
             .reverseSoftLimitEnabled(true);
-    
+
             //Place gear ratio in this
             config.encoder
-            .positionConversionFactor(SENSOR_TO_MECHANISM)
-            .velocityConversionFactor(SENSOR_TO_MECHANISM/60); 
-    
+            .positionConversionFactor(1/SENSOR_TO_MECHANISM)
+            .velocityConversionFactor(1/SENSOR_TO_MECHANISM/60); 
+
     
             return config;
         }
@@ -334,11 +354,11 @@ public final class Constants {
          * 
          * @return A RotaryMechanismReal object configured with real hardware
          */
-        public static RotaryMechanismReal getReal()
+        public static FlywheelMechanismReal getReal()
         {
-            MotorIO io = new MotorIORev(NAME, Ports.DoubleMotorMain, isFlex, getREVConfig(), FOLLOWER_1);
+            MotorIO io = new MotorIORev(NAME, Ports.DoubleMotorMain, isFlex, getREVConfig(),FOLLOWER_1);
     
-            return new RotaryMechanismReal(io, CONSTANTS, null);
+            return new FlywheelMechanismReal(io);
         }
     
         /**
@@ -351,7 +371,7 @@ public final class Constants {
          * 
          * @return A RotaryMechanismSim object configured for physics simulation
          */
-        public static RotaryMechanismSim getSim()
+        public static FlywheelMechanism getSim()
         {
             MotorIOSim io = new MotorIORevSim(
                 NAME,
@@ -361,15 +381,11 @@ public final class Constants {
                 SENSOR_TO_MECHANISM,
                 DCMOTOR,
                 getREVConfig(),
-                FOLLOWER_1);
+                FOLLOWER_1
+                );
     
-            return new RotaryMechanismSim(
-                io,
-                DCMOTOR,
-                MOI,
-                false,
-                CONSTANTS,
-                Optional.empty());
+                return new FlywheelMechanismSim(io,
+                DCMOTOR, MOI, TOLERANCE);
         }
     
         /**
@@ -381,20 +397,20 @@ public final class Constants {
          * 
          * @return A RotaryMechanism object for log replay
          */
-        public static RotaryMechanism getReplay()
+        public static FlywheelMechanism getReplay()
         {
-            return new RotaryMechanism(NAME, CONSTANTS) {};
+            return new FlywheelMechanism() {};
         }
 
-    private static final LoggedTunableNumber STOW_SETPOINT = new LoggedTunableNumber("TEST", 0.0);
-    private static final LoggedTunableNumber RAISED_SETPOINT = new LoggedTunableNumber("RAISED", 12.5);
+    // private static final LoggedTunableNumber STOW_SETPOINT = new LoggedTunableNumber("TEST", 0.0);
+    // private static final LoggedTunableNumber RAISED_SETPOINT = new LoggedTunableNumber("RAISED", 12.5);
 
         @RequiredArgsConstructor
         @SuppressWarnings("Immutable")
         @Getter
         public enum Setpoint {
-            STOW(Rotations.of(STOW_SETPOINT.get())),
-            RAISED(Rotations.of(RAISED_SETPOINT.get()));
+            STOW(Rotations.of(0)),
+            RAISED(Rotations.of(1));
 
             private final Angle setpoint;
         }
