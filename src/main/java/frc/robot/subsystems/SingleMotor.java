@@ -41,9 +41,9 @@ public class SingleMotor extends SubsystemBase {
     {
 
         return this.run(
-            () -> io.runVelocity(SingleMotorConstants.CRUISE_VELOCITY,
+            () -> io.runVelocity(setpoint.getSetpoint(),
                 SingleMotorConstants.ACCELERATION, PIDSlot.SLOT_1))
-            .withName("Go To "  + setpoint.name() + " Setpoint");
+            .withName("Go To "  + setpoint.name() + " Setpoint - "+setpoint.getSetpoint().in(RotationsPerSecond));
             
     }; 
     public Command setSetpoint(Angle postion)

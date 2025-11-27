@@ -1,0 +1,241 @@
+{
+  "hubs": [
+    {
+      "x": -8,
+      "y": -8,
+      "width": 1536,
+      "height": 912,
+      "state": {
+        "sidebar": {
+          "width": 497,
+          "expanded": [
+            "/questnav/position",
+            "/questnav/quaternion",
+            "/questnav/eulerAngles",
+            "/SmartDashboard/QuestNav",
+            "/SmartDashboard/CageLift",
+            "/AdvantageKit/DriverStation/Joystick0",
+            "/AdvantageKit",
+            "/AdvantageKit/1_NeoSingle",
+            "/AdvantageKit/1_FlyWheel",
+            "/SmartDashboard",
+            "/AdvantageKit/RealOutputs",
+            "/AdvantageKit/RealOutputs/Robot",
+            "/AdvantageKit/2_DoubleMotor",
+            "/Log0",
+            "/Log1",
+            "/RealOutputs"
+          ]
+        },
+        "tabs": {
+          "selected": 3,
+          "tabs": [
+            {
+              "type": 0,
+              "title": "",
+              "controller": null,
+              "controllerUUID": "10ysz3psgrq6oj6ef637zr1c3bsfq47i",
+              "renderer": "#/",
+              "controlsHeight": 0
+            },
+            {
+              "type": 1,
+              "title": "SingleMotor",
+              "controller": {
+                "leftSources": [
+                  {
+                    "type": "stepped",
+                    "logKey": "/1_SingleMotor/Position",
+                    "logType": "Number",
+                    "visible": false,
+                    "options": {
+                      "color": "#2b66a2",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "stepped",
+                    "logKey": "/1_SingleMotor/Velocity",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#80588e",
+                      "size": "normal"
+                    }
+                  }
+                ],
+                "rightSources": [
+                  {
+                    "type": "stepped",
+                    "logKey": "/1_SingleMotor/Velocity",
+                    "logType": "Number",
+                    "visible": false,
+                    "options": {
+                      "color": "#e5b31b",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "stepped",
+                    "logKey": "/1_SingleMotor/SupplyCurrent",
+                    "logType": "Number",
+                    "visible": false,
+                    "options": {
+                      "color": "#e48b32",
+                      "size": "normal"
+                    }
+                  }
+                ],
+                "discreteSources": [
+                  {
+                    "type": "stripes",
+                    "logKey": "/RealOutputs/1_SingleMotor/Current Command",
+                    "logType": "String",
+                    "visible": true,
+                    "options": {
+                      "color": "#af2437"
+                    }
+                  }
+                ],
+                "leftLockedRange": null,
+                "rightLockedRange": null,
+                "leftUnitConversion": {
+                  "type": "angle",
+                  "factor": 1,
+                  "from": "radians",
+                  "to": "rotations"
+                },
+                "rightUnitConversion": {
+                  "type": null,
+                  "factor": 1
+                },
+                "leftFilter": 0,
+                "rightFilter": 0
+              },
+              "controllerUUID": "ufrgg5uq4l9horiu9qxpepi5pr6rfiqn",
+              "renderer": null,
+              "controlsHeight": 200
+            },
+            {
+              "type": 1,
+              "title": "DoubleMotor",
+              "controller": {
+                "leftSources": [
+                  {
+                    "type": "stepped",
+                    "logKey": "/2_DoubleMotor/Position",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#2b66a2",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "stepped",
+                    "logKey": "/2_DoubleMotor/Velocity",
+                    "logType": "Number",
+                    "visible": false,
+                    "options": {
+                      "color": "#e5b31b",
+                      "size": "normal"
+                    }
+                  }
+                ],
+                "rightSources": [
+                  {
+                    "type": "stepped",
+                    "logKey": "/2_DoubleMotor/AppliedVoltage",
+                    "logType": "Number",
+                    "visible": false,
+                    "options": {
+                      "color": "#af2437",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "stepped",
+                    "logKey": "/2_DoubleMotor/SupplyCurrent",
+                    "logType": "Number",
+                    "visible": false,
+                    "options": {
+                      "color": "#80588e",
+                      "size": "normal"
+                    }
+                  }
+                ],
+                "discreteSources": [],
+                "leftLockedRange": null,
+                "rightLockedRange": null,
+                "leftUnitConversion": {
+                  "type": null,
+                  "factor": 1
+                },
+                "rightUnitConversion": {
+                  "type": null,
+                  "factor": 1
+                },
+                "leftFilter": 0,
+                "rightFilter": 0
+              },
+              "controllerUUID": "n50zcbm6p8jnkyge5jv6pcpehele9xi7",
+              "renderer": null,
+              "controlsHeight": 200
+            },
+            {
+              "type": 3,
+              "title": "3D Field",
+              "controller": {
+                "sources": [
+                  {
+                    "type": "robot",
+                    "logKey": "/RealOutputs/3D_Feild/0_Zero",
+                    "logType": "Pose3d[]",
+                    "visible": true,
+                    "options": {
+                      "model": "Robot_MotorTrainerBoard"
+                    }
+                  },
+                  {
+                    "type": "component",
+                    "logKey": "/RealOutputs/3D_Feild/1_SingleWheel",
+                    "logType": "Pose3d[]",
+                    "visible": true,
+                    "options": {}
+                  },
+                  {
+                    "type": "component",
+                    "logKey": "/RealOutputs/3D_Feild/2_DoubleMotor",
+                    "logType": "Pose3d[]",
+                    "visible": true,
+                    "options": {}
+                  }
+                ],
+                "game": "Axes",
+                "origin": "blue"
+              },
+              "controllerUUID": "vkm47nhlmk2se1cosmv48cllvd1ex4tu",
+              "renderer": {
+                "cameraIndex": -2,
+                "orbitFov": 50,
+                "cameraPosition": [
+                  -0.27572253356550636,
+                  0.8650678546142703,
+                  -1.392954321478873
+                ],
+                "cameraTarget": [
+                  -0.3456750491240113,
+                  0.5045721734607662,
+                  -0.46282018629367927
+                ]
+              },
+              "controlsHeight": 200
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "satellites": [],
+  "version": "4.1.2"
+}

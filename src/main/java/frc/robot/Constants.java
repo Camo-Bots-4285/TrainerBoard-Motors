@@ -177,25 +177,22 @@ public final class Constants {
                 .p(0.01, ClosedLoopSlot.kSlot1)
                 .i(0.0, ClosedLoopSlot.kSlot1)
                 .d(0.0, ClosedLoopSlot.kSlot1)
-                .velocityFF( 0, ClosedLoopSlot.kSlot1)
+                .velocityFF(0.511, ClosedLoopSlot.kSlot1)
                 .iZone(0, ClosedLoopSlot.kSlot1)
                 .iMaxAccum(0.0, ClosedLoopSlot.kSlot1)
-                .outputRange(-1,1, ClosedLoopSlot.kSlot1)
-    
-            .maxMotion
-            //Position
-                .maxVelocity(ACCELERATION.in(RotationsPerSecondPerSecond)*ROTOR_TO_SENSOR*SENSOR_TO_MECHANISM,ClosedLoopSlot.kSlot0)
-                .maxAcceleration(CRUISE_VELOCITY.in(RotationsPerSecond)*4*ROTOR_TO_SENSOR*SENSOR_TO_MECHANISM,ClosedLoopSlot.kSlot0)
-                .allowedClosedLoopError(TOLERANCE.in(RotationsPerSecond),ClosedLoopSlot.kSlot0)
-                
-            //Velocity
-                .maxAcceleration(ACCELERATION.in(RotationsPerSecondPerSecond),ClosedLoopSlot.kSlot1)
-                .allowedClosedLoopError(TOLERANCE.in(RotationsPerSecond),ClosedLoopSlot.kSlot1);
-                
+                .outputRange(-1,1, ClosedLoopSlot.kSlot1);
 
+                
     
-
-    
+            // .maxMotion
+            // //Position
+            //     .maxVelocity(ACCELERATION.in(RotationsPerSecondPerSecond)*ROTOR_TO_SENSOR*SENSOR_TO_MECHANISM,ClosedLoopSlot.kSlot0)
+            //     .maxAcceleration(CRUISE_VELOCITY.in(RotationsPerSecond)*4*ROTOR_TO_SENSOR*SENSOR_TO_MECHANISM,ClosedLoopSlot.kSlot0)
+            //     .allowedClosedLoopError(TOLERANCE.in(RotationsPerSecond),ClosedLoopSlot.kSlot0)
+                
+            // //Velocity
+            //     .maxAcceleration(ACCELERATION.in(RotationsPerSecondPerSecond),ClosedLoopSlot.kSlot1)
+            //     .allowedClosedLoopError(TOLERANCE.in(RotationsPerSecond),ClosedLoopSlot.kSlot1);
     
             return config;
         }
@@ -236,7 +233,7 @@ public final class Constants {
         @Getter
         public enum Setpoint {
             STOP(RotationsPerSecond.of(0)),
-            INTAKE(RotationsPerSecond.of(0.001)),
+            INTAKE(RotationsPerSecond.of(1)),
             UNJAM(RotationsPerSecond.of(-0.25));
 
             private final AngularVelocity setpoint;
@@ -252,7 +249,7 @@ public final class Constants {
     
         public static final AngularVelocity CRUISE_VELOCITY = Units.RotationsPerSecond.of(204);
         public static final AngularAcceleration ACCELERATION = Units.RotationsPerSecondPerSecond.of(204);
-    public static final Velocity<AngularAccelerationUnit> JERK = ACCELERATION.per(Second);
+        public static final Velocity<AngularAccelerationUnit> JERK = ACCELERATION.per(Second);
     
         private static final double ROTOR_TO_SENSOR = (1.0 / 1.0);
         private static final double SENSOR_TO_MECHANISM = (204.0 / 1.0);
@@ -313,7 +310,13 @@ public final class Constants {
     
             config.closedLoop
                 // Position slot 0
-                .pid(5, 0, 0.002,ClosedLoopSlot.kSlot0)
+                .p(25.0, ClosedLoopSlot.kSlot0)
+                .i(0.0, ClosedLoopSlot.kSlot0)
+                .d(0.0, ClosedLoopSlot.kSlot0)
+                .velocityFF(0.0, ClosedLoopSlot.kSlot0)
+                .iZone(0, ClosedLoopSlot.kSlot0)
+                .iMaxAccum(0.0, ClosedLoopSlot.kSlot0)
+                .outputRange(-1,1, ClosedLoopSlot.kSlot0)
     
                 //Velocity slot 1
                 .p(1.2939E-10, ClosedLoopSlot.kSlot1)
@@ -322,13 +325,13 @@ public final class Constants {
                 .velocityFF( 0.0000815, ClosedLoopSlot.kSlot1)
                 .iZone(75.0, ClosedLoopSlot.kSlot1)
                 .iMaxAccum(0.003, ClosedLoopSlot.kSlot1)
-                .outputRange(-1,1, ClosedLoopSlot.kSlot1)
+                .outputRange(-1,1, ClosedLoopSlot.kSlot1);
     
-            .maxMotion
-            //Global Motion control
-                .maxVelocity(CRUISE_VELOCITY.in(RotationsPerSecond),ClosedLoopSlot.kSlot0)
-                .maxAcceleration(ACCELERATION.in(RotationsPerSecondPerSecond),ClosedLoopSlot.kSlot0)
-                .allowedClosedLoopError(TOLERANCE.in(RotationsPerSecond),ClosedLoopSlot.kSlot0);
+            // .maxMotion
+            // //Global Motion control
+            //     .maxVelocity(CRUISE_VELOCITY.in(RotationsPerSecond),ClosedLoopSlot.kSlot0)
+            //     .maxAcceleration(ACCELERATION.in(RotationsPerSecondPerSecond),ClosedLoopSlot.kSlot0)
+            //     .allowedClosedLoopError(TOLERANCE.in(RotationsPerSecond),ClosedLoopSlot.kSlot0);
     
             config.softLimit
             .forwardSoftLimit(MAX_ANGLE.in(Rotations))
@@ -410,7 +413,7 @@ public final class Constants {
         @Getter
         public enum Setpoint {
             STOW(Rotations.of(0)),
-            RAISED(Rotations.of(1));
+            RAISED(Rotations.of(1.0));
 
             private final Angle setpoint;
         }

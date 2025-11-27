@@ -11,7 +11,9 @@ import java.util.Optional;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 
+import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.Constants.DoubleMotorConstants;
 import frc.robot.Constants.SingleMotorConstants;
 import frc.robot.HumanInterface.CoDriver;
@@ -21,6 +23,7 @@ import frc.robot.HumanInterface.StateMachine.StateManager;
 import frc.robot.subsystems.DoubleMotor;
 import frc.robot.subsystems.Motors;
 import frc.robot.subsystems.SingleMotor;
+
 
 
 @SuppressWarnings("unused")
@@ -57,6 +60,21 @@ public class RobotContainer {
     // private final ElasticDisplay m_ElasticInterface = new ElasticDisplay();
     // private final Tunning m_TunningInterface = new Tunning(m_flyWheel);
 
+    Joystick driverJoystick = new Joystick(0);
+
+    private JoystickButton btn_1 = new JoystickButton(driverJoystick, 1);
+    private JoystickButton btn_2 = new JoystickButton(driverJoystick, 2);
+    private JoystickButton btn_3 = new JoystickButton(driverJoystick, 3);
+    private JoystickButton btn_4 = new JoystickButton(driverJoystick, 4);
+    private JoystickButton btn_5 = new JoystickButton(driverJoystick, 5);
+    private JoystickButton btn_6 = new JoystickButton(driverJoystick, 6);
+    private JoystickButton btn_7 = new JoystickButton(driverJoystick, 7);
+    private JoystickButton btn_8 = new JoystickButton(driverJoystick, 8);
+    private JoystickButton btn_9 = new JoystickButton(driverJoystick, 9);
+    private JoystickButton btn_10 = new JoystickButton(driverJoystick, 10);
+    private JoystickButton btn_11 = new JoystickButton(driverJoystick, 11);
+    private JoystickButton btn_12 = new JoystickButton(driverJoystick, 12);
+
     
     /**
      * Constructs a new RobotContainer.
@@ -86,12 +104,16 @@ public class RobotContainer {
             }
         }
 
-        // Configure Bindings from HumanInterface 
-        // m_DriverInterface.DriverBindings();
-        // m_coDriver.CoDriverBindings();
+        //m_singleMotor.setDefaultCommand(m_singleMotor.setSetpoint(Rotation.of(1)));
+        
+        
+        m_singleMotor.setDefaultCommand(m_singleMotor.setVelocity(SingleMotorConstants.Setpoint.STOP));
+        m_doubleMotor.setDefaultCommand(m_doubleMotor.setSetpoint(DoubleMotorConstants.DEFAULT_SETPOINT));
 
-        m_singleMotor.setDefaultCommand(m_singleMotor.setSetpoint(Rotation.of(1)));
-        //m_doubleMotor.setDefaultCommand(m_doubleMotor.setSetpoint(DoubleMotorConstants.Setpoint.RAISED));
+        btn_4.whileTrue(m_singleMotor.setVelocity(SingleMotorConstants.Setpoint.INTAKE).alongWith(m_doubleMotor.setSetpoint(DoubleMotorConstants.Setpoint.RAISED)).withName("Intake"));
+        btn_3.whileTrue(m_singleMotor.setVelocity(SingleMotorConstants.Setpoint.UNJAM).alongWith(m_doubleMotor.setSetpoint(DoubleMotorConstants.Setpoint.RAISED)).withName("Unjam"));
+
+
     }
 
     /**

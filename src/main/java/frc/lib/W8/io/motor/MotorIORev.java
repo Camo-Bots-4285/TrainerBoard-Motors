@@ -84,9 +84,9 @@ public class MotorIORev implements MotorIO {
         CONTROL_TYPE_MAP.put(ControlType.DUTYCYCLE,
             com.revrobotics.spark.SparkBase.ControlType.kDutyCycle);
         CONTROL_TYPE_MAP.put(ControlType.POSITION,
-            com.revrobotics.spark.SparkBase.ControlType.kMAXMotionPositionControl);
+            com.revrobotics.spark.SparkBase.ControlType.kPosition);
         CONTROL_TYPE_MAP.put(ControlType.VELOCITY,
-            com.revrobotics.spark.SparkBase.ControlType.kMAXMotionVelocityControl);
+            com.revrobotics.spark.SparkBase.ControlType.kVelocity);
     }
 
     /**
@@ -196,10 +196,11 @@ public class MotorIORev implements MotorIO {
         inputs.supplyCurrent = Amps.of(motor.getOutputCurrent());
         inputs.temperature = Celsius.of(motor.getMotorTemperature());
         inputs.positionError = null;
-        inputs.positionError = Angle.ofBaseUnits(0, Rotation);
-        inputs.velocityError = AngularVelocity.ofBaseUnits(0, RotationsPerSecond);
-        inputs.goalPosition = Angle.ofBaseUnits(0, Rotation);
+        inputs.positionError = null;
+        inputs.velocityError = null;
+        inputs.goalPosition = null;
         inputs.controlType = null;
+        inputs.torqueCurrent = null;
     }
 
     @Override

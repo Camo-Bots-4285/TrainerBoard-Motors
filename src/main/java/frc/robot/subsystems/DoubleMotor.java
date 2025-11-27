@@ -17,6 +17,7 @@ import frc.lib.W8.util.LoggerHelper;
 
 import frc.robot.Constants.DoubleMotorConstants;
 import frc.robot.Constants.DoubleMotorConstants.Setpoint;
+import frc.robot.Constants.SingleMotorConstants;
 
 
 public class DoubleMotor extends SubsystemBase {
