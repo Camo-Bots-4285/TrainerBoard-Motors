@@ -8,7 +8,10 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import frc.lib.W8.io.motor.MotorIO.PIDSlot;
@@ -17,7 +20,6 @@ import frc.lib.W8.util.LoggerHelper;
 
 import frc.robot.Constants.DoubleMotorConstants;
 import frc.robot.Constants.DoubleMotorConstants.Setpoint;
-import frc.robot.Constants.SingleMotorConstants;
 
 
 public class DoubleMotor extends SubsystemBase {
@@ -27,8 +29,6 @@ public class DoubleMotor extends SubsystemBase {
     public DoubleMotor(FlywheelMechanism io)
     {
         this.io = io;
-        //io.setEncoderPosition(Rotation.of(0));
-        //setSetpoint(DoubleMotorConstants.DEFAULT_SETPOINT).ignoringDisable(true).schedule();
     }
 
     @Override
@@ -52,7 +52,7 @@ public class DoubleMotor extends SubsystemBase {
 
     // public boolean nearGoal(Angle targetPosition)
     // {
-    //     return io.nearGoal(targetPosition, DoubleMotorConstants.TOLERANCE);
+    //     return io.nearGoal(targetPosition, DoubleMotorConstants.ANGLE_TOLERANCE);
     // }
 
     // public Command waitUntilGoalCommand(Angle position)
@@ -75,49 +75,43 @@ public class DoubleMotor extends SubsystemBase {
 
     private double startTime;
     public Command setWiggle() {
-        return this.runOnce(
-            () -> io.runPosition(Rotation.of(0.35),
-                DoubleMotorConstants.CRUISE_VELOCITY,
-                DoubleMotorConstants.ACCELERATION, DoubleMotorConstants.JERK,
-                PIDSlot.SLOT_1))
-            .withName("Go To "  + " Setpoint");
 
-        // return new FunctionalCommand(
-        //     // init: runs ONCE at command start
-        //     () -> {
-        //         startTime = Timer.getFPGATimestamp();    // store starting offset
-        //     },
+        return new FunctionalCommand(
+            // init: runs ONCE at command start
+            () -> {
+                startTime = Timer.getFPGATimestamp();    // store starting offset
+            },
     
-        //     // execute: runs repeatedly
-        //     () -> {
-        //         double t = Timer.getFPGATimestamp() - startTime; // <-- zeroed time
-        //         double center = (DoubleMotorConstants.MIN_ANGLE.in(Rotation) +
-        //                             DoubleMotorConstants.MAX_ANGLE.in(Rotation)) / 2;
-        //         double amp = (-DoubleMotorConstants.MIN_ANGLE.in(Rotation) +
-        //                             DoubleMotorConstants.MAX_ANGLE.in(Rotation)) / 2;                    
+            // execute: runs repeatedly
+            () -> {
+                double t = Timer.getFPGATimestamp() - startTime; // <-- zeroed time
+                double center = (DoubleMotorConstants.MIN_ANGLE.in(Rotation) +
+                                    DoubleMotorConstants.MAX_ANGLE.in(Rotation)) / 2;
+                double amp = (-DoubleMotorConstants.MIN_ANGLE.in(Rotation) +
+                                    DoubleMotorConstants.MAX_ANGLE.in(Rotation)) / 2;                    
     
-        //         double position = amp * -Math.cos(t%(2*Math.PI)) + center;
+                double position = amp * -Math.cos(t/15%(2*Math.PI)) + center;
     
-        //         io.runPosition(
-        //             Rotation.of(position),
-        //             DoubleMotorConstants.CRUISE_VELOCITY,
-        //             DoubleMotorConstants.ACCELERATION,
-        //             DoubleMotorConstants.JERK,
-        //             PIDSlot.SLOT_0
-        //         );
-        //     },
+                io.runPosition(
+                    Rotation.of(position),
+                    DoubleMotorConstants.CRUISE_VELOCITY,
+                    DoubleMotorConstants.ACCELERATION,
+                    DoubleMotorConstants.JERK,
+                    PIDSlot.SLOT_0
+                );
+            },
     
-        //     // end: runs ONCE when the command is interrupted or finishes
-        //     (interrupted) -> {
-        //         // Optional: stop servo or go to neutral
-        //         // io.runPosition(Rotation.of(variation), ...);
-        //     },
+            // end: runs ONCE when the command is interrupted or finishes
+            (interrupted) -> {
+                // Optional: stop servo or go to neutral
+                // io.runPosition(Rotation.of(variation), ...);
+            },
     
-        //     // isFinished: normally false → runs until interrupted
-        //     () -> false,
+            // isFinished: normally false → runs until interrupted
+            () -> false,
     
-        //     this // subsystem requirement
-        // ).withName("Servo Wiggle");
+            this // subsystem requirement
+        ).withName("Servo Wiggle");
     }
 
     public AngularVelocity getVelocity()

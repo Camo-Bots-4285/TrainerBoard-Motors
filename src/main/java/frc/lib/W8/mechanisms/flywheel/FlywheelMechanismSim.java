@@ -23,6 +23,7 @@ import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.units.AngularAccelerationUnit;
+import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -154,6 +155,12 @@ public class FlywheelMechanismSim implements FlywheelMechanism {
     public Current getTorqueCurrent()
     {
         return inputs.torqueCurrent;
+    }
+
+    @Override
+    public Angle getPosition()
+    {
+        return inputs.position;
     }
 
     @Override

@@ -4,7 +4,8 @@ import java.util.Optional;
 
 import frc.lib.W8.util.Device;
 import frc.lib.W8.util.Device.CAN;
-import frc.lib.W8.util.LoggedTunableNumber;
+import frc.robot.subsystems.DoubleMotor;
+import frc.robot.subsystems.SingleMotor;
 import frc.lib.W8.io.motor.MotorIO;
 import frc.lib.W8.io.motor.MotorIORev;
 import frc.lib.W8.io.motor.MotorIORev.RevFollower;
@@ -13,7 +14,6 @@ import frc.lib.W8.io.motor.MotorIOSim;
 import frc.lib.W8.mechanisms.flywheel.FlywheelMechanism;
 import frc.lib.W8.mechanisms.flywheel.FlywheelMechanismReal;
 import frc.lib.W8.mechanisms.flywheel.FlywheelMechanismSim;
-import frc.lib.W8.mechanisms.rotary.*;
 import frc.lib.W8.mechanisms.rotary.RotaryMechanism.RotaryMechCharacteristics;
 
 import lombok.Getter;
@@ -25,7 +25,6 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.AngularAccelerationUnit;
 import edu.wpi.first.units.Units;
-import edu.wpi.first.units.measure.Acceleration;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -33,12 +32,9 @@ import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.Mass;
 import edu.wpi.first.units.measure.MomentOfInertia;
 import edu.wpi.first.units.measure.Velocity;
-import edu.wpi.first.wpilibj.simulation.FlywheelSim;
-import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 
 import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.config.SparkMaxConfig;
-import com.revrobotics.spark.config.MAXMotionConfig.MAXMotionPositionMode;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 
@@ -126,15 +122,15 @@ public final class Constants {
         public static final Angle MIN_ANGLE = Rotations.of(0.0);
         public static final Angle MAX_ANGLE = Rotations.of(1);
         public static final Angle STARTING_ANGLE = Rotations.of(0.0);
-        public static final Distance ARM_LENGTH = Meters.of(0.05);
+        public static final Distance WHEEL_RADIUS = Meters.of(0.05);
     
         public static final RotaryMechCharacteristics CONSTANTS =
-            new RotaryMechCharacteristics(OFFSET, ARM_LENGTH, MIN_ANGLE, MAX_ANGLE, STARTING_ANGLE);
+            new RotaryMechCharacteristics(OFFSET, WHEEL_RADIUS, MIN_ANGLE, MAX_ANGLE, STARTING_ANGLE);
     
-        public static final Mass ARM_MASS = Kilograms.of(0.01);
+        public static final Mass WHEEL_MASS = Kilograms.of(0.1);
         public static final DCMotor DCMOTOR = DCMotor.getNeo550(1);
         public static final MomentOfInertia MOI = KilogramSquareMeters
-            .of(SingleJointedArmSim.estimateMOI(ARM_LENGTH.in(Meters), ARM_MASS.in(Kilograms)));
+            .of(0.5*WHEEL_MASS.in(Kilogram)*Math.pow(WHEEL_RADIUS.in(Meter),2));
     
         public static final Setpoint DEFAULT_SETPOINT = Setpoint.STOP;
 
@@ -198,31 +194,30 @@ public final class Constants {
         }
     
 
-        public static FlywheelMechanismReal getReal()
+        public static SingleMotor getReal()
         {
             MotorIO io = new MotorIORev(NAME, Ports.SingleMotor, isFlex, getREVConfig());
     
-            return new FlywheelMechanismReal(io);
+            return new SingleMotor(new FlywheelMechanismReal(io));
         }
     
-        public static FlywheelMechanism getSim()
+        public static SingleMotor getSim()
         {
-            MotorIOSim io = new MotorIORevSim(
-                NAME,
-                Ports.SingleMotor,
-                isFlex,
-                ROTOR_TO_SENSOR,
-                SENSOR_TO_MECHANISM,
-                DCMOTOR,
-                getREVConfig());
     
-                return new FlywheelMechanismSim(io,
-                DCMOTOR, MOI, TOLERANCE);
+                return new SingleMotor(new FlywheelMechanismSim(new MotorIORevSim(
+                    NAME,
+                    Ports.SingleMotor,
+                    isFlex,
+                    ROTOR_TO_SENSOR,
+                    SENSOR_TO_MECHANISM,
+                    DCMOTOR,
+                    getREVConfig()),
+                DCMOTOR, MOI, TOLERANCE));
         }
     
-        public static FlywheelMechanism getReplay()
+        public static SingleMotor getReplay()
         {
-            return new FlywheelMechanism() {};
+            return new SingleMotor(new FlywheelMechanism() {});
         }
 
     // private static final LoggedTunableNumber RAISED_SETPOINT = new LoggedTunableNumber("RAISED", 1);
@@ -245,7 +240,8 @@ public final class Constants {
 
         public static boolean isFlex = false;
     
-        public static final AngularVelocity TOLERANCE =RotationsPerSecond.of(0.01);
+        public static final Angle ANGLE_TOLERANCE = Rotations.of(0.01);
+        public static final AngularVelocity ANGLE_VELOCITY_TOLERANCE =RotationsPerSecond.of(0.01);
     
         public static final AngularVelocity CRUISE_VELOCITY = Units.RotationsPerSecond.of(204);
         public static final AngularAcceleration ACCELERATION = Units.RotationsPerSecondPerSecond.of(204);
@@ -264,12 +260,11 @@ public final class Constants {
         public static final RotaryMechCharacteristics CONSTANTS =
             new RotaryMechCharacteristics(OFFSET, WHEEL_RADIUS, MIN_ANGLE, MAX_ANGLE, STARTING_ANGLE);
     
-        public static final Mass WHEEL_MASS = Kilograms.of(5.0);
+        public static final Mass WHEEL_MASS = Kilograms.of(0.0625);
         public static final DCMotor DCMOTOR = DCMotor.getNEO(2);
 
         public static final MomentOfInertia MOI = KilogramSquareMeters
             .of(0.5*WHEEL_MASS.in(Kilogram)*Math.pow(WHEEL_RADIUS.in(Meter), 2));
-
     
         public static final Setpoint DEFAULT_SETPOINT = Setpoint.STOW;
 
@@ -306,8 +301,6 @@ public final class Constants {
             .inverted(false)
             .signals.primaryEncoderPositionPeriodMs(20);
 
-
-    
             config.closedLoop
                 // Position slot 0
                 .p(25.0, ClosedLoopSlot.kSlot0)
@@ -357,11 +350,11 @@ public final class Constants {
          * 
          * @return A RotaryMechanismReal object configured with real hardware
          */
-        public static FlywheelMechanismReal getReal()
+        public static DoubleMotor getReal()
         {
             MotorIO io = new MotorIORev(NAME, Ports.DoubleMotorMain, isFlex, getREVConfig(),FOLLOWER_1);
     
-            return new FlywheelMechanismReal(io);
+            return new DoubleMotor(new FlywheelMechanismReal(io));
         }
     
         /**
@@ -374,7 +367,7 @@ public final class Constants {
          * 
          * @return A RotaryMechanismSim object configured for physics simulation
          */
-        public static FlywheelMechanism getSim()
+        public static DoubleMotor getSim()
         {
             MotorIOSim io = new MotorIORevSim(
                 NAME,
@@ -387,8 +380,8 @@ public final class Constants {
                 FOLLOWER_1
                 );
     
-                return new FlywheelMechanismSim(io,
-                DCMOTOR, MOI, TOLERANCE);
+                return new DoubleMotor(new FlywheelMechanismSim(io,
+                DCMOTOR, MOI, ANGLE_VELOCITY_TOLERANCE));
         }
     
         /**
@@ -400,9 +393,9 @@ public final class Constants {
          * 
          * @return A RotaryMechanism object for log replay
          */
-        public static FlywheelMechanism getReplay()
+        public static DoubleMotor getReplay()
         {
-            return new FlywheelMechanism() {};
+            return new DoubleMotor(new FlywheelMechanism() {});
         }
 
     // private static final LoggedTunableNumber STOW_SETPOINT = new LoggedTunableNumber("TEST", 0.0);

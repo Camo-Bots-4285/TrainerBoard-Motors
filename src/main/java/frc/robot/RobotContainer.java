@@ -87,20 +87,20 @@ public class RobotContainer {
         switch (Constants.currentMode) {
             case REAL -> {
                 // Real robot, instantiate hardware IO implementations
-                m_singleMotor = new SingleMotor(SingleMotorConstants.getReal());
-                m_doubleMotor = new DoubleMotor(DoubleMotorConstants.getReal());
+                m_singleMotor = SingleMotorConstants.getReal();
+                m_doubleMotor = DoubleMotorConstants.getReal();
             }
 
             case SIM -> {
                 // Sim robot, instantiate physics sim IO implementations
-                m_singleMotor = new SingleMotor(SingleMotorConstants.getSim());
-                m_doubleMotor = new DoubleMotor(DoubleMotorConstants.getSim());
+                m_singleMotor = SingleMotorConstants.getSim();
+                m_doubleMotor = DoubleMotorConstants.getSim();
             }
 
             default -> {
                 // Replayed robot, disable IO implementations
-                m_singleMotor = new SingleMotor(SingleMotorConstants.getReplay());
-                m_doubleMotor = new DoubleMotor(DoubleMotorConstants.getReplay());
+                m_singleMotor = SingleMotorConstants.getReplay();
+                m_doubleMotor = DoubleMotorConstants.getReplay();
             }
         }
 

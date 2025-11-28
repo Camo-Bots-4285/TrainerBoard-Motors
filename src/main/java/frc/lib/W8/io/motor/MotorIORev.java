@@ -148,12 +148,12 @@ public class MotorIORev implements MotorIO {
             motor = new SparkMax(CAN.id(), MotorType.kBrushless);
         }
 
+        //Applies config to the motor
+        motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
         //Define controller and encoder
         controller = motor.getClosedLoopController();
         encoder = motor.getEncoder();
-
-        //Applies config to the motor
-        motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
         //For loop that iterates for each follower mototr
          for (int i = 0; i < followerData.length; i++) {
@@ -167,7 +167,7 @@ public class MotorIORev implements MotorIO {
             } else {
                 motor_follower = new SparkMax(followerData[i].id.id(), MotorType.kBrushless);
                 config_follower = new SparkMaxConfig();
-            }
+            }   
     
             //Defines the config to follow main motor
             config_follower
@@ -176,7 +176,6 @@ public class MotorIORev implements MotorIO {
     
             //Applies config to follower motor
             motor_follower.configure(config_follower, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-
         }
     }
 
