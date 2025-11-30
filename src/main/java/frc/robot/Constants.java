@@ -194,17 +194,17 @@ public final class Constants {
         }
     
 
-        public static SingleMotor getReal()
+        public static FlywheelMechanism getReal()
         {
             MotorIO io = new MotorIORev(NAME, Ports.SingleMotor, isFlex, getREVConfig());
     
-            return new SingleMotor(new FlywheelMechanismReal(io));
+            return new FlywheelMechanismReal(io);
         }
     
-        public static SingleMotor getSim()
+        public static FlywheelMechanism getSim()
         {
     
-                return new SingleMotor(new FlywheelMechanismSim(new MotorIORevSim(
+                return new FlywheelMechanismSim(new MotorIORevSim(
                     NAME,
                     Ports.SingleMotor,
                     isFlex,
@@ -212,12 +212,12 @@ public final class Constants {
                     SENSOR_TO_MECHANISM,
                     DCMOTOR,
                     getREVConfig()),
-                DCMOTOR, MOI, TOLERANCE));
+                DCMOTOR, MOI, TOLERANCE);
         }
     
-        public static SingleMotor getReplay()
+        public static FlywheelMechanism getReplay()
         {
-            return new SingleMotor(new FlywheelMechanism() {});
+            return new FlywheelMechanism() {};
         }
 
     // private static final LoggedTunableNumber RAISED_SETPOINT = new LoggedTunableNumber("RAISED", 1);
@@ -229,9 +229,15 @@ public final class Constants {
         public enum Setpoint {
             STOP(RotationsPerSecond.of(0)),
             INTAKE(RotationsPerSecond.of(1)),
-            UNJAM(RotationsPerSecond.of(-0.25));
+            UNJAM(RotationsPerSecond.of(-0.25)),
+            FUNBOB(RotationsPerSecond.of(0.5));
 
             private final AngularVelocity setpoint;
+
+            AngularVelocity inRotationsPerSecond() {
+                // TODO Auto-generated method stub
+                throw new UnsupportedOperationException("Unimplemented method 'inRotationsPerSecond'");
+            }
         }
     }
 
@@ -264,7 +270,7 @@ public final class Constants {
         public static final DCMotor DCMOTOR = DCMotor.getNEO(2);
 
         public static final MomentOfInertia MOI = KilogramSquareMeters
-            .of(0.5*WHEEL_MASS.in(Kilogram)*Math.pow(WHEEL_RADIUS.in(Meter), 2));
+            .of(17.5);
     
         public static final Setpoint DEFAULT_SETPOINT = Setpoint.STOW;
 
@@ -350,11 +356,11 @@ public final class Constants {
          * 
          * @return A RotaryMechanismReal object configured with real hardware
          */
-        public static DoubleMotor getReal()
+        public static FlywheelMechanism getReal()
         {
             MotorIO io = new MotorIORev(NAME, Ports.DoubleMotorMain, isFlex, getREVConfig(),FOLLOWER_1);
     
-            return new DoubleMotor(new FlywheelMechanismReal(io));
+            return new FlywheelMechanismReal(io);
         }
     
         /**
@@ -367,7 +373,7 @@ public final class Constants {
          * 
          * @return A RotaryMechanismSim object configured for physics simulation
          */
-        public static DoubleMotor getSim()
+        public static FlywheelMechanism getSim()
         {
             MotorIOSim io = new MotorIORevSim(
                 NAME,
@@ -380,8 +386,8 @@ public final class Constants {
                 FOLLOWER_1
                 );
     
-                return new DoubleMotor(new FlywheelMechanismSim(io,
-                DCMOTOR, MOI, ANGLE_VELOCITY_TOLERANCE));
+                return new FlywheelMechanismSim(io,
+                DCMOTOR, MOI, ANGLE_VELOCITY_TOLERANCE);
         }
     
         /**
@@ -393,9 +399,9 @@ public final class Constants {
          * 
          * @return A RotaryMechanism object for log replay
          */
-        public static DoubleMotor getReplay()
+        public static FlywheelMechanism getReplay()
         {
-            return new DoubleMotor(new FlywheelMechanism() {});
+            return new FlywheelMechanism() {};
         }
 
     // private static final LoggedTunableNumber STOW_SETPOINT = new LoggedTunableNumber("TEST", 0.0);
@@ -406,9 +412,39 @@ public final class Constants {
         @Getter
         public enum Setpoint {
             STOW(Rotations.of(0)),
-            RAISED(Rotations.of(1.0));
-
+            RAISED(Rotations.of(1.0)),
+            FUNBOB(Rotations.of(.5));        
+            
             private final Angle setpoint;
+        }
+    }
+
+
+
+
+
+    public class IntakeConstants {
+        public static final String NAME = "3_Intake";
+
+
+
+        @RequiredArgsConstructor
+        @SuppressWarnings("Immutable")
+        @Getter
+        public enum IntakeOptions {
+                STOP(SingleMotorConstants.Setpoint.STOP,DoubleMotorConstants.Setpoint.STOW),
+                INTAKE(SingleMotorConstants.Setpoint.INTAKE,DoubleMotorConstants.Setpoint.RAISED),
+                UNJAM(SingleMotorConstants.Setpoint.UNJAM,DoubleMotorConstants.Setpoint.RAISED),
+                MIDDLE(SingleMotorConstants.Setpoint.FUNBOB,DoubleMotorConstants.Setpoint.FUNBOB);
+
+            //   STOP(Rotations.of(0), RotationsPerSecond.of(0)),
+            //   INTAKE(Rotations.of(0), RotationsPerSecond.of(1)),
+            //   UNJAM(Rotations.of(0), RotationsPerSecond.of(-0.25)),
+            //   FUNBOB(Rotations.of(0), RotationsPerSecond.of(0.5));
+
+
+            private final SingleMotorConstants.Setpoint wheelsspeed;
+            private final DoubleMotorConstants.Setpoint pivotangle;
         }
     }
 

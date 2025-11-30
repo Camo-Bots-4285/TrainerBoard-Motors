@@ -14,7 +14,6 @@ import com.revrobotics.spark.config.SparkBaseConfig;
 
 
 import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Time;
 
@@ -78,21 +77,27 @@ public class MotorIORevSim extends MotorIORev implements MotorIOSim {
         this.SensorToMechanismRatio = SensorToMechanismRatio;
 
         if (isFlex) {
-            simState = new SparkFlexSim((SparkFlex) motor, gearBox.withReduction(SensorToMechanismRatio));
+            simState = new SparkFlexSim((SparkFlex) motor, gearBox);
         } else {
-            simState = new SparkMaxSim((SparkMax) motor, gearBox.withReduction(SensorToMechanismRatio));
+            simState = new SparkMaxSim((SparkMax) motor, gearBox);
         }
 
         motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
         simState.enable();
+
     }
 
     @Override
-    public void setVelocity(AngularVelocity velocity)
-    {
-       simState.setVelocity(velocity.in(RotationsPerSecond));
+    public void setVelocity(AngularVelocity velocity) {
 
+        simState.setBusVoltage(RoboRioSim.getVInVoltage());
+
+        double deltaTime = Seconds.of(Timer.getTimestamp()).minus(lastTime).in(Seconds);
+    
+        simState.iterate(velocity.in(RotationsPerSecond), simState.getBusVoltage(), deltaTime);
+
+        lastTime = Seconds.of(Timer.getTimestamp());
     }
 
     @Override
@@ -107,26 +112,12 @@ public class MotorIORevSim extends MotorIORev implements MotorIOSim {
     }
 
     @Override
-    public void updateInputs(MotorInputs inputs)
-    {
-        simState.setBusVoltage(RoboRioSim.getVInVoltage());
-
-        Time currentTime = Seconds.of(Timer.getTimestamp());
-        double deltaTime = currentTime.minus(lastTime).in(Seconds); 
-
-        simState.iterate(
-            simState.getVelocity(),
-            simState.getBusVoltage(),
-            deltaTime);
-
+    public void updateInputs(MotorInputs inputs) {
         inputs.position = Rotation.of(encoder.getPosition());
         inputs.velocity = RotationsPerSecond.of(encoder.getVelocity());
         inputs.appliedVoltage = Volts.of(simState.getAppliedOutput() * simState.getBusVoltage());
         inputs.supplyCurrent = Amps.of(simState.getMotorCurrent());
         inputs.temperature = Celsius.of(motor.getMotorTemperature());
-
-        lastTime = currentTime;
-
     }
 
     @Override

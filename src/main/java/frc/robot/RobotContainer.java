@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.Constants.DoubleMotorConstants;
 import frc.robot.Constants.SingleMotorConstants;
+import frc.robot.Constants.IntakeConstants.IntakeOptions;
 import frc.robot.HumanInterface.CoDriver;
 import frc.robot.HumanInterface.Driver;
 import frc.robot.HumanInterface.ElasticDisplay;
@@ -23,6 +24,7 @@ import frc.robot.HumanInterface.StateMachine.StateManager;
 import frc.robot.subsystems.DoubleMotor;
 import frc.robot.subsystems.Motors;
 import frc.robot.subsystems.SingleMotor;
+import frc.robot.subsystems.Intake;
 
 
 
@@ -43,8 +45,10 @@ import frc.robot.subsystems.SingleMotor;
  */
 public class RobotContainer {
 
-    private final SingleMotor m_singleMotor;
-    private final DoubleMotor m_doubleMotor;
+    //private final SingleMotor m_singleMotor;
+    //private final DoubleMotor m_doubleMotor;
+
+    private final Intake m_intake;
 
     //private final ArmSubsytem m_FlyWheel = new ArmSubsytem();
     //private final Motors m_motor = new Motors();
@@ -87,31 +91,42 @@ public class RobotContainer {
         switch (Constants.currentMode) {
             case REAL -> {
                 // Real robot, instantiate hardware IO implementations
-                m_singleMotor = SingleMotorConstants.getReal();
-                m_doubleMotor = DoubleMotorConstants.getReal();
+                //m_singleMotor = new SingleMotor (SingleMotorConstants.getReal());
+                //m_doubleMotor = DoubleMotorConstants.getReal();
+                m_intake = new Intake(SingleMotorConstants.getReal(), DoubleMotorConstants.getReal());
             }
 
             case SIM -> {
                 // Sim robot, instantiate physics sim IO implementations
-                m_singleMotor = SingleMotorConstants.getSim();
-                m_doubleMotor = DoubleMotorConstants.getSim();
+                //m_singleMotor = SingleMotorConstants.getSim();
+                //m_doubleMotor = DoubleMotorConstants.getSim();
+                m_intake = new Intake(SingleMotorConstants.getSim(), DoubleMotorConstants.getSim());
             }
 
             default -> {
                 // Replayed robot, disable IO implementations
-                m_singleMotor = SingleMotorConstants.getReplay();
-                m_doubleMotor = DoubleMotorConstants.getReplay();
+                //m_singleMotor = SingleMotorConstants.getReplay();
+                //m_doubleMotor = DoubleMotorConstants.getReplay();
+                m_intake = new Intake(SingleMotorConstants.getReplay(), DoubleMotorConstants.getReplay());
             }
         }
 
         //m_singleMotor.setDefaultCommand(m_singleMotor.setSetpoint(Rotation.of(1)));
         
         
-        m_singleMotor.setDefaultCommand(m_singleMotor.setVelocity(SingleMotorConstants.Setpoint.STOP));
-        m_doubleMotor.setDefaultCommand(m_doubleMotor.setSetpoint(DoubleMotorConstants.DEFAULT_SETPOINT));
+        //m_singleMotor.setDefaultCommand(m_singleMotor.setVelocity(SingleMotorConstants.Setpoint.STOP));
+        //m_doubleMotor.setDefaultCommand(m_doubleMotor.setSetpoint(DoubleMotorConstants.DEFAULT_SETPOINT));
 
-        btn_4.whileTrue(m_singleMotor.setVelocity(SingleMotorConstants.Setpoint.INTAKE).alongWith(m_doubleMotor.setSetpoint(DoubleMotorConstants.Setpoint.RAISED)).withName("Intake"));
-        btn_3.whileTrue(m_singleMotor.setVelocity(SingleMotorConstants.Setpoint.UNJAM).alongWith(m_doubleMotor.setSetpoint(DoubleMotorConstants.Setpoint.RAISED)).withName("Unjam"));
+        //btn_4.whileTrue(m_singleMotor.setVelocity(SingleMotorConstants.Setpoint.INTAKE).alongWith(m_doubleMotor.setSetpoint(DoubleMotorConstants.Setpoint.RAISED)).withName("Intake"));
+        //btn_3.whileTrue(m_singleMotor.setVelocity(SingleMotorConstants.Setpoint.UNJAM).alongWith(m_doubleMotor.setSetpoint(DoubleMotorConstants.Setpoint.RAISED)).withName("Unjam"));
+        //btn_2.whileTrue(m_singleMotor.setVelocity(SingleMotorConstants.Setpoint.FUNBOB).alongWith(m_doubleMotor.setSetpoint(DoubleMotorConstants.Setpoint.FUNBOB)).withName("FUNBOB"));
+
+        m_intake.setDefaultCommand(m_intake.setSetpoint(IntakeOptions.INTAKE));
+
+        btn_4.whileTrue(m_intake.setSetpoint(IntakeOptions.INTAKE));
+        btn_3.whileTrue(m_intake.setSetpoint(IntakeOptions.UNJAM));
+        btn_2.whileTrue(m_intake.setSetpoint(IntakeOptions.MIDDLE));
+
 
 
     }

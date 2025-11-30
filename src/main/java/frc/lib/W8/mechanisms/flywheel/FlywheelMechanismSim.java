@@ -15,6 +15,7 @@
 
 package frc.lib.W8.mechanisms.flywheel;
 
+import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Seconds;
@@ -71,6 +72,45 @@ public class FlywheelMechanismSim implements FlywheelMechanism {
         visualizer = new FlywheelVisualizer(io.getName());
     }
 
+    //New perodic method made that acount for the lag in REV sim
+    // @Override
+    // public void periodic() {
+    //     Time currentTime = Seconds.of(Timer.getTimestamp());
+    //     double deltaTime = currentTime.minus(lastTime).in(Seconds);
+
+    //     io.setVelocity(sim.getAngularVelocity());
+    
+    //     io.updateInputs(inputs);
+    
+    //     sim.setInputVoltage(inputs.appliedVoltage.in(Volts));
+    //     sim.update(deltaTime);
+    //     RoboRioSim.setVInVoltage(
+    //         BatterySim.calculateDefaultBatteryLoadedVoltage(inputs.supplyCurrent.in(Amps))
+    //     );
+    
+    //     io.setVelocity(sim.getAngularVelocity());
+    //     io.setRotorAcceleration(sim.getAngularAcceleration());
+    
+    //     Angle positionChange = Radians.of(
+    //         sim.getAngularVelocityRadPerSec() * deltaTime
+    //         + 0.5 * sim.getAngularAccelerationRadPerSecSq() * Math.pow(deltaTime, 2)
+    //     );
+    //     io.setPosition(inputs.position.plus(positionChange));
+
+    //     lastTime = currentTime;
+    
+    //     Logger.processInputs(io.getName(), inputs);
+    
+    //     visualizer.setAngle(inputs.position);
+    //     if (inputs.velocityError != null && inputs.velocityError.lte(tolerance)) {
+    //         visualizer.setColor(Color.kGreen);
+    //     } else {
+    //         visualizer.setColor(Color.kBlack);
+    //     }
+    // }
+
+
+    //Original W8 periodic method
     @Override
     public void periodic()
     {
@@ -80,7 +120,7 @@ public class FlywheelMechanismSim implements FlywheelMechanism {
         sim.setInputVoltage(inputs.appliedVoltage.in(Volts));
         sim.update(deltaTime);
         RoboRioSim.setVInVoltage(
-            BatterySim.calculateDefaultBatteryLoadedVoltage(sim.getCurrentDrawAmps()));
+            BatterySim.calculateDefaultBatteryLoadedVoltage(inputs.supplyCurrent.in(Amps)));
 
         lastTime = currentTime;
 
