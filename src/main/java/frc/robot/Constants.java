@@ -1,20 +1,17 @@
 package frc.robot;
 
-import java.util.Optional;
-
-import frc.lib.W8.util.Device;
-import frc.lib.W8.util.Device.CAN;
-import frc.robot.subsystems.DoubleMotor;
-import frc.robot.subsystems.SingleMotor;
-import frc.lib.W8.io.motor.MotorIO;
-import frc.lib.W8.io.motor.MotorIORev;
-import frc.lib.W8.io.motor.MotorIORev.RevFollower;
-import frc.lib.W8.io.motor.MotorIORevSim;
-import frc.lib.W8.io.motor.MotorIOSim;
-import frc.lib.W8.mechanisms.flywheel.FlywheelMechanism;
-import frc.lib.W8.mechanisms.flywheel.FlywheelMechanismReal;
-import frc.lib.W8.mechanisms.flywheel.FlywheelMechanismSim;
-import frc.lib.W8.mechanisms.rotary.RotaryMechanism.RotaryMechCharacteristics;
+import frc.lib.util.Device;
+import frc.lib.util.PID;
+import frc.lib.io.motor.MotorIO;
+import frc.lib.io.motor.MotorIO.PIDSlot;
+import frc.lib.io.motor.MotorIORev;
+import frc.lib.io.motor.MotorIORev.RevFollower;
+import frc.lib.io.motor.MotorIORevSim;
+import frc.lib.mechanisms.flywheel.FlywheelMechanism;
+import frc.lib.mechanisms.flywheel.FlywheelMechanismReal;
+import frc.lib.mechanisms.flywheel.FlywheelMechanismSim;
+import frc.lib.mechanisms.rotary.RotaryMechanism.RotaryAxis;
+import frc.lib.mechanisms.rotary.RotaryMechanism.RotaryMechCharacteristics;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -23,8 +20,6 @@ import static edu.wpi.first.units.Units.*;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.units.AngularAccelerationUnit;
-import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -34,7 +29,9 @@ import edu.wpi.first.units.measure.MomentOfInertia;
 import edu.wpi.first.units.measure.Velocity;
 
 import com.revrobotics.spark.ClosedLoopSlot;
+import com.revrobotics.spark.FeedbackSensor;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import com.revrobotics.spark.config.MAXMotionConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 
@@ -62,6 +59,7 @@ public final class Constants {
     public static final Mode currentMode = RobotBase.isReal() ? Mode.REAL : simMode;
 
     public static final boolean tuningMode = false;
+    public static final boolean disableHAL = false;
 
     public static enum Mode {
         /** Running on a real robot. */
@@ -74,6 +72,19 @@ public final class Constants {
         REPLAY
     }
 
+    public static final Distance STARTING_POSE_DRIVE_TOLERANCE = Inches.of(3.0); // For auto
+    public static final Angle STARTING_POSE_ROT_TOLERANCE_DEGREES = Degrees.of(5.0);
+
+    public static final Distance FULL_ROBOT_WIDTH = Inches.of(27.0 + 3.25);
+    public static final Distance FULL_ROBOT_LENGTH = Inches.of(27.0 + 3.25);
+    public static final Distance BUMPER_HEIGHT = Inches.of(4.0);
+
+    public enum RobotType {
+        COMP,
+        ALPHA,
+        NONE
+    }
+
   public static class BuildConstants {
         public static final String PROJECT_NAME = "MotorTrainerBoard";
         public static final String VERSION = "Teaching/Testing";
@@ -83,36 +94,29 @@ public final class Constants {
         public static final int DIRTY = 0;
   }
 
-  public enum RobotType {
-    COMP,
-    ALPHA,
-    NONE
-}
-
     public class Ports {
         /*
         * LIST OF CHANNEL AND CAN IDS
         */
 
-        public static final Device.CAN REV_pdh = new CAN(50, "rio");
+        public static final Device.CAN REV_pdh = new Device.CAN(50, "rio");
 
-        public static final Device.CAN SingleMotor = new CAN(14, "rio");
+        public static final Device.CAN SingleMotor = new Device.CAN(14, "rio");
 
-        public static final Device.CAN DoubleMotorMain = new CAN(10, "rio");
-        public static final Device.CAN DoubleMotorFollower = new CAN(11, "rio");
+        public static final Device.CAN DoubleMotorMain = new Device.CAN(10, "rio");
+        public static final Device.CAN DoubleMotorFollower = new Device.CAN(11, "rio");
 
     }
     
     public class SingleMotorConstants {
         public static final String NAME = "1_SingleMotor";
-
-        public static final boolean isFlex = false;
     
-        public static final AngularVelocity TOLERANCE = RotationsPerSecond.of(0.01);
+        public static final Angle TOLERANCE_POSITION  = Rotations.of(0.01);
+        public static final AngularVelocity TOLERANCE_VELOCITY = RotationsPerSecond.of(0.01);
     
         public static final AngularVelocity CRUISE_VELOCITY = RotationsPerSecond.of(0.2);
         public static final AngularAcceleration ACCELERATION = RotationsPerSecondPerSecond.of(0.1);
-        public static final Velocity<AngularAccelerationUnit> JERK = ACCELERATION.per(Second);
+        public static final Velocity<edu.wpi.first.units.AngularAccelerationUnit> JERK = ACCELERATION.per(Second);
     
         private static final double ROTOR_TO_SENSOR = (1.0 / 1.0);
         private static final double SENSOR_TO_MECHANISM = (100.0 / 1.0);
@@ -125,8 +129,8 @@ public final class Constants {
         public static final Distance WHEEL_RADIUS = Meters.of(0.05);
     
         public static final RotaryMechCharacteristics CONSTANTS =
-            new RotaryMechCharacteristics(OFFSET, WHEEL_RADIUS, MIN_ANGLE, MAX_ANGLE, STARTING_ANGLE);
-    
+            new RotaryMechCharacteristics(WHEEL_RADIUS, MIN_ANGLE, MAX_ANGLE, STARTING_ANGLE, RotaryAxis.YAW);
+
         public static final Mass WHEEL_MASS = Kilograms.of(0.1);
         public static final DCMotor DCMOTOR = DCMotor.getNeo550(1);
         public static final MomentOfInertia MOI = KilogramSquareMeters
@@ -134,91 +138,141 @@ public final class Constants {
     
         public static final Setpoint DEFAULT_SETPOINT = Setpoint.STOP;
 
+        public static final PID SLOT0_PID = new PID(10.0, 0.0, 0.0).withS(0.0); //Postion
+        public static final PID SLOT1_PID = new PID(0.01, 0.0, 0.0).withV(0.511); // Velocity
+
         public static SparkMaxConfig getREVConfig()
         {
             SparkMaxConfig config = new SparkMaxConfig();
-    
-            config.smartCurrentLimit(
-                20,
-                35,
-                60
-            )
-            .voltageCompensation(12.0)
-            .idleMode(false ? IdleMode.kBrake : IdleMode.kCoast)
-            .inverted(false)
-            .signals.primaryEncoderPositionPeriodMs(20);
 
-            //Place gear ratio in this
+            config.smartCurrentLimit(60)
+            .voltageCompensation(12.0)
+            .idleMode(IdleMode.kCoast)
+            .inverted(false)
+            //.advanceCommutation(120.0)//Uncomment if using minion this is from SparkMaxConfig.Presets.CTRE_Minion some peole say -120 works
+            
+            .signals
+            .primaryEncoderPositionAlwaysOn(true)
+            .primaryEncoderPositionPeriodMs(20)
+            .primaryEncoderVelocityAlwaysOn(true)
+            .primaryEncoderVelocityPeriodMs(20)
+            .appliedOutputPeriodMs(20)
+            .busVoltagePeriodMs(20)
+            .outputCurrentPeriodMs(20);
+
             config.encoder
             .positionConversionFactor(1/SENSOR_TO_MECHANISM)
-            .velocityConversionFactor(1/SENSOR_TO_MECHANISM/60); 
+            .velocityConversionFactor(1/SENSOR_TO_MECHANISM/60);
+            //Uncomment if using velocity control
+            // .uvwMeasurementPeriod(10)
+            // .uvwAverageDepth(2);
 
             config.softLimit
             .forwardSoftLimit(MAX_ANGLE.in(Rotations))
             .forwardSoftLimitEnabled(false)
             .reverseSoftLimit(MIN_ANGLE.in(Rotations))
             .reverseSoftLimitEnabled(false);
-    
+
             config.closedLoop
+            .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
+
                 // Position slot 0
-                .p(10.0, ClosedLoopSlot.kSlot0)
-                .i(0.0, ClosedLoopSlot.kSlot0)
-                .d(0.0, ClosedLoopSlot.kSlot0)
-                .velocityFF(0.0, ClosedLoopSlot.kSlot0)
+                .p(SLOT0_PID.P(), ClosedLoopSlot.kSlot0)
+                .i(SLOT0_PID.I(), ClosedLoopSlot.kSlot0)
+                .d(SLOT0_PID.D(), ClosedLoopSlot.kSlot0)
                 .iZone(0, ClosedLoopSlot.kSlot0)
                 .iMaxAccum(0.0, ClosedLoopSlot.kSlot0)
                 .outputRange(-1,1, ClosedLoopSlot.kSlot0)
     
                 //Velocity slot 1
-                .p(0.01, ClosedLoopSlot.kSlot1)
-                .i(0.0, ClosedLoopSlot.kSlot1)
-                .d(0.0, ClosedLoopSlot.kSlot1)
-                .velocityFF(0.511, ClosedLoopSlot.kSlot1)
+                .p(SLOT1_PID.P(), ClosedLoopSlot.kSlot1)
+                .i(SLOT1_PID.I(), ClosedLoopSlot.kSlot1)
+                .d(SLOT1_PID.D(), ClosedLoopSlot.kSlot1)
                 .iZone(0, ClosedLoopSlot.kSlot1)
                 .iMaxAccum(0.0, ClosedLoopSlot.kSlot1)
-                .outputRange(-1,1, ClosedLoopSlot.kSlot1);
+                .outputRange(-1,1, ClosedLoopSlot.kSlot1)
 
-                
+                // Position slot 2 with motion profile
+                .p(SLOT0_PID.P(), ClosedLoopSlot.kSlot2)
+                .i(SLOT0_PID.I(), ClosedLoopSlot.kSlot2)
+                .d(SLOT0_PID.D(), ClosedLoopSlot.kSlot2)
+                .iZone(0, ClosedLoopSlot.kSlot2)
+                .iMaxAccum(0.0, ClosedLoopSlot.kSlot2)
+                .outputRange(-1,1, ClosedLoopSlot.kSlot2)
     
-            // .maxMotion
-            // //Position
-            //     .maxVelocity(ACCELERATION.in(RotationsPerSecondPerSecond)*ROTOR_TO_SENSOR*SENSOR_TO_MECHANISM,ClosedLoopSlot.kSlot0)
-            //     .maxAcceleration(CRUISE_VELOCITY.in(RotationsPerSecond)*4*ROTOR_TO_SENSOR*SENSOR_TO_MECHANISM,ClosedLoopSlot.kSlot0)
-            //     .allowedClosedLoopError(TOLERANCE.in(RotationsPerSecond),ClosedLoopSlot.kSlot0)
+                //Velocity slot 3 with motion profile
+                .p(SLOT1_PID.P(), ClosedLoopSlot.kSlot3)
+                .i(SLOT1_PID.I(), ClosedLoopSlot.kSlot3)
+                .d(SLOT1_PID.D(), ClosedLoopSlot.kSlot3)
+                .iZone(0, ClosedLoopSlot.kSlot3)
+                .iMaxAccum(0.0, ClosedLoopSlot.kSlot3)
+                .outputRange(-1,1, ClosedLoopSlot.kSlot3)
+
+                .feedForward
+                .kS(SLOT0_PID.S(),ClosedLoopSlot.kSlot0)
+                .kV(SLOT0_PID.V(),ClosedLoopSlot.kSlot0)
+                .kA(SLOT0_PID.A(),ClosedLoopSlot.kSlot0)
+                .kG(SLOT0_PID.G(),ClosedLoopSlot.kSlot0)
+                .kCosRatio(0,ClosedLoopSlot.kSlot0)
+
+                .kS(SLOT1_PID.S(),ClosedLoopSlot.kSlot1)
+                .kV(SLOT1_PID.V(),ClosedLoopSlot.kSlot1)
+                .kA(SLOT1_PID.A(),ClosedLoopSlot.kSlot1)
+
+                .kS(SLOT0_PID.S(),ClosedLoopSlot.kSlot2)
+                .kV(SLOT0_PID.V(),ClosedLoopSlot.kSlot2)
+                .kA(SLOT0_PID.A(),ClosedLoopSlot.kSlot2)
+                .kG(SLOT0_PID.G(),ClosedLoopSlot.kSlot2)
+                .kCosRatio(0,ClosedLoopSlot.kSlot2)
+
+                .kS(SLOT1_PID.S(),ClosedLoopSlot.kSlot3)
+                .kV(SLOT1_PID.V(),ClosedLoopSlot.kSlot3)
+                .kA(SLOT1_PID.A(),ClosedLoopSlot.kSlot3);
+
+
+
+            config.closedLoop.maxMotion
+            //Position 
+                .cruiseVelocity(CRUISE_VELOCITY.in(RotationsPerSecond),ClosedLoopSlot.kSlot2)
+                .maxAcceleration(ACCELERATION.in(RotationsPerSecondPerSecond),ClosedLoopSlot.kSlot2)
+                .allowedProfileError(TOLERANCE_POSITION.in(Rotations),ClosedLoopSlot.kSlot2)
+                .positionMode(MAXMotionConfig.MAXMotionPositionMode.kMAXMotionTrapezoidal,ClosedLoopSlot.kSlot2)
                 
-            // //Velocity
-            //     .maxAcceleration(ACCELERATION.in(RotationsPerSecondPerSecond),ClosedLoopSlot.kSlot1)
-            //     .allowedClosedLoopError(TOLERANCE.in(RotationsPerSecond),ClosedLoopSlot.kSlot1);
+            //Velocity
+                .cruiseVelocity(CRUISE_VELOCITY.in(RotationsPerSecond),ClosedLoopSlot.kSlot3)
+                .maxAcceleration(ACCELERATION.in(RotationsPerSecondPerSecond),ClosedLoopSlot.kSlot3)
+                .allowedProfileError(TOLERANCE_VELOCITY.in(RotationsPerSecond),ClosedLoopSlot.kSlot3);
     
             return config;
         }
-    
 
-        public static FlywheelMechanism getReal()
-        {
-            MotorIO io = new MotorIORev(NAME, Ports.SingleMotor, isFlex, getREVConfig());
-    
-            return new FlywheelMechanismReal(io);
+    public static FlywheelMechanism<?> getSingleMotorIO()
+    {
+        FlywheelMechanism<?> mechanism;
+        switch (Constants.currentMode) {
+            case REAL:
+                mechanism = 
+                    new FlywheelMechanismReal(NAME,
+                        new MotorIORev(NAME, getREVConfig(), Ports.SingleMotor));
+                break;
+            case SIM:
+                mechanism = 
+                    new FlywheelMechanismSim(
+                        NAME,
+                        new MotorIORevSim(NAME, getREVConfig(),Ports.SingleMotor,ROTOR_TO_SENSOR,SENSOR_TO_MECHANISM,DCMOTOR),
+                        DCMOTOR, MOI, TOLERANCE_VELOCITY);
+                break;
+            case REPLAY:
+                mechanism = 
+                    new FlywheelMechanism<>(NAME, new MotorIO(){}) {};
+                break;
+            default:
+                throw new IllegalStateException("Unrecognized Robot Mode");
         }
-    
-        public static FlywheelMechanism getSim()
-        {
-    
-                return new FlywheelMechanismSim(new MotorIORevSim(
-                    NAME,
-                    Ports.SingleMotor,
-                    isFlex,
-                    ROTOR_TO_SENSOR,
-                    SENSOR_TO_MECHANISM,
-                    DCMOTOR,
-                    getREVConfig()),
-                DCMOTOR, MOI, TOLERANCE);
-        }
-    
-        public static FlywheelMechanism getReplay()
-        {
-            return new FlywheelMechanism() {};
-        }
+        mechanism.enableTunablePID(PIDSlot.SLOT_0, SLOT0_PID);
+
+        return mechanism;
+    }
 
     // private static final LoggedTunableNumber RAISED_SETPOINT = new LoggedTunableNumber("RAISED", 1);
     // private static final LoggedTunableNumber UNJAM_SETPOINT = new LoggedTunableNumber("TEST", -1);
@@ -228,30 +282,26 @@ public final class Constants {
         @Getter
         public enum Setpoint {
             STOP(RotationsPerSecond.of(0)),
-            INTAKE(RotationsPerSecond.of(1)),
+            INTAKE(RotationsPerSecond.of(0.75)),
             UNJAM(RotationsPerSecond.of(-0.25)),
             FUNBOB(RotationsPerSecond.of(0.5));
 
             private final AngularVelocity setpoint;
-
-            AngularVelocity inRotationsPerSecond() {
-                // TODO Auto-generated method stub
-                throw new UnsupportedOperationException("Unimplemented method 'inRotationsPerSecond'");
-            }
         }
     }
 
     public class DoubleMotorConstants {
         public static String NAME = "2_DoubleMotor";
 
-        public static boolean isFlex = false;
+        public static final Angle TOLERANCE_POSITION  = Rotations.of(0.01);
+        public static final AngularVelocity TOLERANCE_VELOCITY = RotationsPerSecond.of(0.01);
     
         public static final Angle ANGLE_TOLERANCE = Rotations.of(0.01);
         public static final AngularVelocity ANGLE_VELOCITY_TOLERANCE =RotationsPerSecond.of(0.01);
     
-        public static final AngularVelocity CRUISE_VELOCITY = Units.RotationsPerSecond.of(204);
-        public static final AngularAcceleration ACCELERATION = Units.RotationsPerSecondPerSecond.of(204);
-        public static final Velocity<AngularAccelerationUnit> JERK = ACCELERATION.per(Second);
+        public static final AngularVelocity CRUISE_VELOCITY = RotationsPerSecond.of(204);
+        public static final AngularAcceleration ACCELERATION = RotationsPerSecondPerSecond.of(204);
+        public static final Velocity<edu.wpi.first.units.AngularAccelerationUnit> JERK = ACCELERATION.per(Second);
     
         private static final double ROTOR_TO_SENSOR = (1.0 / 1.0);
         private static final double SENSOR_TO_MECHANISM = (204.0 / 1.0);
@@ -264,7 +314,7 @@ public final class Constants {
         public static final Distance WHEEL_RADIUS = Meters.of(0.5);
     
         public static final RotaryMechCharacteristics CONSTANTS =
-            new RotaryMechCharacteristics(OFFSET, WHEEL_RADIUS, MIN_ANGLE, MAX_ANGLE, STARTING_ANGLE);
+            new RotaryMechCharacteristics(WHEEL_RADIUS, MIN_ANGLE, MAX_ANGLE, STARTING_ANGLE, RotaryAxis.YAW);
     
         public static final Mass WHEEL_MASS = Kilograms.of(0.0625);
         public static final DCMotor DCMOTOR = DCMotor.getNEO(2);
@@ -275,6 +325,9 @@ public final class Constants {
         public static final Setpoint DEFAULT_SETPOINT = Setpoint.STOW;
 
         public static final RevFollower FOLLOWER_1 = new RevFollower(Ports.DoubleMotorFollower, true);
+
+        public static final PID SLOT0_PID = new PID(25.0, 0.0, 0.0).withS(0.0); //Postion
+        public static final PID SLOT1_PID = new PID(1.2939E-10, 0.00000015, 0.0).withV(0.0000815); // Velocity
     
         /**
          * Creates and returns the TalonFX motor controller configuration for the rotary mechanism.
@@ -292,117 +345,139 @@ public final class Constants {
          * </ul>
          * 
          * @return A configured TalonFXConfiguration object ready to apply to a motor controller
-         */
+         */        
         public static SparkMaxConfig getREVConfig()
         {
             SparkMaxConfig config = new SparkMaxConfig();
-    
-            config.smartCurrentLimit(
-                20,
-                35,
-                60
-            )
+
+            config.smartCurrentLimit(60)
             .voltageCompensation(12.0)
-            .idleMode(false ? IdleMode.kBrake : IdleMode.kCoast)
+            .idleMode(IdleMode.kCoast)
             .inverted(false)
-            .signals.primaryEncoderPositionPeriodMs(20);
+            //.advanceCommutation(120.0)//Uncomment if using minion this is from SparkMaxConfig.Presets.CTRE_Minion some peole say -120 works
+            
+            .signals
+            .primaryEncoderPositionAlwaysOn(true)
+            .primaryEncoderPositionPeriodMs(20)
+            .primaryEncoderVelocityAlwaysOn(true)
+            .primaryEncoderVelocityPeriodMs(20)
+            .appliedOutputPeriodMs(20)
+            .busVoltagePeriodMs(20)
+            .outputCurrentPeriodMs(20);
+
+            config.encoder
+            .positionConversionFactor(1/SENSOR_TO_MECHANISM)
+            .velocityConversionFactor(1/SENSOR_TO_MECHANISM/60);
+            //Uncomment if using velocity control
+            // .uvwMeasurementPeriod(10)
+            // .uvwAverageDepth(2);
+
+            config.softLimit
+            .forwardSoftLimit(MAX_ANGLE.in(Rotations))
+            .forwardSoftLimitEnabled(false)
+            .reverseSoftLimit(MIN_ANGLE.in(Rotations))
+            .reverseSoftLimitEnabled(false);
 
             config.closedLoop
+            .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
+
                 // Position slot 0
-                .p(25.0, ClosedLoopSlot.kSlot0)
-                .i(0.0, ClosedLoopSlot.kSlot0)
-                .d(0.0, ClosedLoopSlot.kSlot0)
-                .velocityFF(0.0, ClosedLoopSlot.kSlot0)
+                .p(SLOT0_PID.P(), ClosedLoopSlot.kSlot0)
+                .i(SLOT0_PID.I(), ClosedLoopSlot.kSlot0)
+                .d(SLOT0_PID.D(), ClosedLoopSlot.kSlot0)
                 .iZone(0, ClosedLoopSlot.kSlot0)
                 .iMaxAccum(0.0, ClosedLoopSlot.kSlot0)
                 .outputRange(-1,1, ClosedLoopSlot.kSlot0)
     
                 //Velocity slot 1
-                .p(1.2939E-10, ClosedLoopSlot.kSlot1)
-                .i(0.00000015, ClosedLoopSlot.kSlot1)
-                .d(0.0, ClosedLoopSlot.kSlot1)
-                .velocityFF( 0.0000815, ClosedLoopSlot.kSlot1)
-                .iZone(75.0, ClosedLoopSlot.kSlot1)
-                .iMaxAccum(0.003, ClosedLoopSlot.kSlot1)
-                .outputRange(-1,1, ClosedLoopSlot.kSlot1);
-    
-            // .maxMotion
-            // //Global Motion control
-            //     .maxVelocity(CRUISE_VELOCITY.in(RotationsPerSecond),ClosedLoopSlot.kSlot0)
-            //     .maxAcceleration(ACCELERATION.in(RotationsPerSecondPerSecond),ClosedLoopSlot.kSlot0)
-            //     .allowedClosedLoopError(TOLERANCE.in(RotationsPerSecond),ClosedLoopSlot.kSlot0);
-    
-            config.softLimit
-            .forwardSoftLimit(MAX_ANGLE.in(Rotations))
-            .forwardSoftLimitEnabled(true)
-            .reverseSoftLimit(MIN_ANGLE.in(Rotations))
-            .reverseSoftLimitEnabled(true);
+                .p(SLOT1_PID.P(), ClosedLoopSlot.kSlot1)
+                .i(SLOT1_PID.I(), ClosedLoopSlot.kSlot1)
+                .d(SLOT1_PID.D(), ClosedLoopSlot.kSlot1)
+                .iZone(0, ClosedLoopSlot.kSlot1)
+                .iMaxAccum(0.0, ClosedLoopSlot.kSlot1)
+                .outputRange(-1,1, ClosedLoopSlot.kSlot1)
 
-            //Place gear ratio in this
-            config.encoder
-            .positionConversionFactor(1/SENSOR_TO_MECHANISM)
-            .velocityConversionFactor(1/SENSOR_TO_MECHANISM/60); 
+                // Position slot 2 with motion profile
+                .p(SLOT0_PID.P(), ClosedLoopSlot.kSlot2)
+                .i(SLOT0_PID.I(), ClosedLoopSlot.kSlot2)
+                .d(SLOT0_PID.D(), ClosedLoopSlot.kSlot2)
+                .iZone(0, ClosedLoopSlot.kSlot2)
+                .iMaxAccum(0.0, ClosedLoopSlot.kSlot2)
+                .outputRange(-1,1, ClosedLoopSlot.kSlot2)
+    
+                //Velocity slot 3 with motion profile
+                .p(SLOT1_PID.P(), ClosedLoopSlot.kSlot3)
+                .i(SLOT1_PID.I(), ClosedLoopSlot.kSlot3)
+                .d(SLOT1_PID.D(), ClosedLoopSlot.kSlot3)
+                .iZone(0, ClosedLoopSlot.kSlot3)
+                .iMaxAccum(0.0, ClosedLoopSlot.kSlot3)
+                .outputRange(-1,1, ClosedLoopSlot.kSlot3)
 
+                .feedForward
+                .kS(SLOT0_PID.S(),ClosedLoopSlot.kSlot0)
+                .kV(SLOT0_PID.V(),ClosedLoopSlot.kSlot0)
+                .kA(SLOT0_PID.A(),ClosedLoopSlot.kSlot0)
+                .kG(SLOT0_PID.G(),ClosedLoopSlot.kSlot0)
+                .kCosRatio(0,ClosedLoopSlot.kSlot0)
+
+                .kS(SLOT1_PID.S(),ClosedLoopSlot.kSlot1)
+                .kV(SLOT1_PID.V(),ClosedLoopSlot.kSlot1)
+                .kA(SLOT1_PID.A(),ClosedLoopSlot.kSlot1)
+
+                .kS(SLOT0_PID.S(),ClosedLoopSlot.kSlot2)
+                .kV(SLOT0_PID.V(),ClosedLoopSlot.kSlot2)
+                .kA(SLOT0_PID.A(),ClosedLoopSlot.kSlot2)
+                .kG(SLOT0_PID.G(),ClosedLoopSlot.kSlot2)
+                .kCosRatio(0,ClosedLoopSlot.kSlot2)
+
+                .kS(SLOT1_PID.S(),ClosedLoopSlot.kSlot3)
+                .kV(SLOT1_PID.V(),ClosedLoopSlot.kSlot3)
+                .kA(SLOT1_PID.A(),ClosedLoopSlot.kSlot3);
+
+
+
+            config.closedLoop.maxMotion
+            //Position 
+                .cruiseVelocity(CRUISE_VELOCITY.in(RotationsPerSecond),ClosedLoopSlot.kSlot2)
+                .maxAcceleration(ACCELERATION.in(RotationsPerSecondPerSecond),ClosedLoopSlot.kSlot2)
+                .allowedProfileError(TOLERANCE_POSITION.in(Rotations),ClosedLoopSlot.kSlot2)
+                .positionMode(MAXMotionConfig.MAXMotionPositionMode.kMAXMotionTrapezoidal,ClosedLoopSlot.kSlot2)
+                
+            //Velocity
+                .cruiseVelocity(CRUISE_VELOCITY.in(RotationsPerSecond),ClosedLoopSlot.kSlot3)
+                .maxAcceleration(ACCELERATION.in(RotationsPerSecondPerSecond),ClosedLoopSlot.kSlot3)
+                .allowedProfileError(TOLERANCE_VELOCITY.in(RotationsPerSecond),ClosedLoopSlot.kSlot3);
     
             return config;
         }
-    
-        /**
-         * Creates the real robot implementation of the rotary mechanism.
-         * 
-         * <p>
-         * This method instantiates the actual hardware objects (TalonFX motors and CANcoder) that will
-         * be used when running on a real robot.
-         * 
-         * @return A RotaryMechanismReal object configured with real hardware
-         */
-        public static FlywheelMechanism getReal()
-        {
-            MotorIO io = new MotorIORev(NAME, Ports.DoubleMotorMain, isFlex, getREVConfig(),FOLLOWER_1);
-    
-            return new FlywheelMechanismReal(io);
+        public static FlywheelMechanism<?> getDoubleMotorIO()
+    {
+        FlywheelMechanism<?> mechanism;
+        switch (Constants.currentMode) {
+            case REAL:
+                mechanism = 
+                    new FlywheelMechanismReal(NAME,
+                        new MotorIORev(NAME, getREVConfig(), Ports.DoubleMotorMain, FOLLOWER_1));
+                break;
+            case SIM:
+                mechanism = 
+                    new FlywheelMechanismSim(
+                        NAME,
+                        new MotorIORevSim(NAME, getREVConfig(),Ports.DoubleMotorMain,ROTOR_TO_SENSOR,SENSOR_TO_MECHANISM,DCMOTOR, FOLLOWER_1),
+                        DCMOTOR, MOI, TOLERANCE_VELOCITY);
+                break;
+            case REPLAY:
+                mechanism = 
+                    new FlywheelMechanism<>(NAME, new MotorIO(){}) {};
+                break;
+            default:
+                throw new IllegalStateException("Unrecognized Robot Mode");
         }
-    
-        /**
-         * Creates the simulation implementation of the rotary mechanism.
-         * 
-         * <p>
-         * This method creates a physics-based simulation of the mechanism using WPILib's simulation
-         * classes. It models the motor, moment of inertia, and other physical properties to provide
-         * realistic behavior in simulation.
-         * 
-         * @return A RotaryMechanismSim object configured for physics simulation
-         */
-        public static FlywheelMechanism getSim()
-        {
-            MotorIOSim io = new MotorIORevSim(
-                NAME,
-                Ports.DoubleMotorMain,
-                isFlex,
-                ROTOR_TO_SENSOR,
-                SENSOR_TO_MECHANISM,
-                DCMOTOR,
-                getREVConfig(),
-                FOLLOWER_1
-                );
-    
-                return new FlywheelMechanismSim(io,
-                DCMOTOR, MOI, ANGLE_VELOCITY_TOLERANCE);
-        }
-    
-        /**
-         * Creates the log replay implementation of the rotary mechanism.
-         * 
-         * <p>
-         * This is used with AdvantageKit's log replay feature, which allows you to replay logged data
-         * and debug robot code without having the actual robot or running simulation.
-         * 
-         * @return A RotaryMechanism object for log replay
-         */
-        public static FlywheelMechanism getReplay()
-        {
-            return new FlywheelMechanism() {};
-        }
+        mechanism.enableTunablePID(PIDSlot.SLOT_0, SLOT0_PID);
+
+        return mechanism;
+    }
+
 
     // private static final LoggedTunableNumber STOW_SETPOINT = new LoggedTunableNumber("TEST", 0.0);
     // private static final LoggedTunableNumber RAISED_SETPOINT = new LoggedTunableNumber("RAISED", 12.5);
@@ -418,10 +493,6 @@ public final class Constants {
             private final Angle setpoint;
         }
     }
-
-
-
-
 
     public class IntakeConstants {
         public static final String NAME = "3_Intake";
@@ -448,4 +519,8 @@ public final class Constants {
         }
     }
 
+    public class MotorConstants{
+
+        public static final int LEADER_ID = 1;
+    }
 }

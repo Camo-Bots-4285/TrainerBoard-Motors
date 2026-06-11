@@ -11,18 +11,17 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-import frc.lib.W8.io.motor.MotorIO.PIDSlot;
-import frc.lib.W8.mechanisms.flywheel.FlywheelMechanism;
-import frc.lib.W8.util.LoggerHelper;
-import frc.robot.Constants.DoubleMotorConstants;
+import frc.lib.io.motor.MotorIO.PIDSlot;
+import frc.lib.mechanisms.flywheel.FlywheelMechanism;
+import frc.lib.util.LoggerHelper;
 import frc.robot.Constants.SingleMotorConstants;
 import frc.robot.Constants.SingleMotorConstants.Setpoint;
 
 public class SingleMotor extends SubsystemBase {
 
-    private final FlywheelMechanism io;
+    private final FlywheelMechanism<?> io;
 
-    public SingleMotor(FlywheelMechanism io)
+    public SingleMotor(FlywheelMechanism<?> io)
     {
         this.io = io;
     }
@@ -49,10 +48,7 @@ public class SingleMotor extends SubsystemBase {
     public Command setSetpoint(Angle postion)
     {
         return this.runOnce(
-            () -> io.runPosition(postion,
-                DoubleMotorConstants.CRUISE_VELOCITY,
-                DoubleMotorConstants.ACCELERATION, DoubleMotorConstants.JERK,
-                PIDSlot.SLOT_0))
+            () -> io.runPosition(postion, PIDSlot.SLOT_0))
             .withName("Go To "  + postion.in(Rotation) + " Setpoint");
     };
 

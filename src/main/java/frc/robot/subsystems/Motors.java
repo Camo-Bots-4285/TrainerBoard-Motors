@@ -10,13 +10,15 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
+import frc.robot.Constants.MotorConstants;
+
 public class Motors extends SubsystemBase{
     public SparkFlex Leader;
     public SparkClosedLoopController controller;
     private RelativeEncoder encoder;
 
     public Motors(){
-        Leader = new SparkFlex(1, MotorType.kBrushless);
+        Leader = new SparkFlex(MotorConstants.LEADER_ID, MotorType.kBrushless);
          controller = Leader.getClosedLoopController();
          encoder = Leader.getEncoder();
 

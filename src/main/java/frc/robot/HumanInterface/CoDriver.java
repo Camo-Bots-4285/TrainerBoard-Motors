@@ -4,9 +4,9 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.lib.CamoBots.Communication.DigitalButtons.ButtonGroup;
-import frc.lib.CamoBots.Communication.DigitalButtons.CustomAutoBuilder;
-import frc.lib.CamoBots.Helpers.CommandHelper;
+import frc.CamoBots.Communication.DigitalButtons.ButtonGroup;
+import frc.CamoBots.Communication.DigitalButtons.CustomAutoBuilder;
+import frc.CamoBots.Helpers.CommandHelper;
 
 
 
@@ -30,9 +30,6 @@ public class CoDriver extends SubsystemBase {
 
     private NetworkTableInstance networkTableInstance = NetworkTableInstance.getDefault();
 
-
-
-
     // NetworkTable for co-driver digital buttons
     public NetworkTable table = networkTableInstance.getTable("CoDriver_Digital_Buttons");
 
@@ -49,13 +46,10 @@ public class CoDriver extends SubsystemBase {
         return AutoMaker;
     }
 
-
-
     /**
      * Sets up button bindings for co-driver interface buttons.
      */
     public void CoDriverBindings() {
-
 
     }
 

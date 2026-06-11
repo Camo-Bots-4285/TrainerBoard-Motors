@@ -14,6 +14,8 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import frc.lib.io.motor.MotorIO;
+import frc.lib.mechanisms.flywheel.FlywheelMechanism;
 import frc.robot.Constants.DoubleMotorConstants;
 import frc.robot.Constants.SingleMotorConstants;
 import frc.robot.Constants.IntakeConstants.IntakeOptions;
@@ -45,10 +47,11 @@ import frc.robot.subsystems.Intake;
  */
 public class RobotContainer {
 
-    //private final SingleMotor m_singleMotor;
-    //private final DoubleMotor m_doubleMotor;
+    //private final SingleMotor m_singleMotor = new SingleMotor(SingleMotorConstants.getSingleMotorIO());
+    //private final DoubleMotor m_doubleMotor = new DoubleMotor(DoubleMotorConstants.getDoubleMotorIO());
 
-    private final Intake m_intake;
+    private final Intake m_intake = new Intake(SingleMotorConstants.getSingleMotorIO(), DoubleMotorConstants.getDoubleMotorIO());
+    //private final Intake m_intake = new Intake(SingleMotorConstants.getSingleMotorIO(), new FlywheelMechanism<>("NAME", new MotorIO(){}) {});
 
     //private final ArmSubsytem m_FlyWheel = new ArmSubsytem();
     //private final Motors m_motor = new Motors();
@@ -88,28 +91,7 @@ public class RobotContainer {
      * Also registers telemetry logging for the drivetrain subsystem.
      */
     public RobotContainer() { 
-        switch (Constants.currentMode) {
-            case REAL -> {
-                // Real robot, instantiate hardware IO implementations
-                //m_singleMotor = new SingleMotor (SingleMotorConstants.getReal());
-                //m_doubleMotor = DoubleMotorConstants.getReal();
-                m_intake = new Intake(SingleMotorConstants.getReal(), DoubleMotorConstants.getReal());
-            }
-
-            case SIM -> {
-                // Sim robot, instantiate physics sim IO implementations
-                //m_singleMotor = SingleMotorConstants.getSim();
-                //m_doubleMotor = DoubleMotorConstants.getSim();
-                m_intake = new Intake(SingleMotorConstants.getSim(), DoubleMotorConstants.getSim());
-            }
-
-            default -> {
-                // Replayed robot, disable IO implementations
-                //m_singleMotor = SingleMotorConstants.getReplay();
-                //m_doubleMotor = DoubleMotorConstants.getReplay();
-                m_intake = new Intake(SingleMotorConstants.getReplay(), DoubleMotorConstants.getReplay());
-            }
-        }
+        
 
         //m_singleMotor.setDefaultCommand(m_singleMotor.setSetpoint(Rotation.of(1)));
         
@@ -121,8 +103,8 @@ public class RobotContainer {
         //btn_3.whileTrue(m_singleMotor.setVelocity(SingleMotorConstants.Setpoint.UNJAM).alongWith(m_doubleMotor.setSetpoint(DoubleMotorConstants.Setpoint.RAISED)).withName("Unjam"));
         //btn_2.whileTrue(m_singleMotor.setVelocity(SingleMotorConstants.Setpoint.FUNBOB).alongWith(m_doubleMotor.setSetpoint(DoubleMotorConstants.Setpoint.FUNBOB)).withName("FUNBOB"));
 
-        m_intake.setDefaultCommand(m_intake.setSetpoint(IntakeOptions.INTAKE));
-
+        m_intake.setDefaultCommand(m_intake.setSetpoint(IntakeOptions.STOP));
+        
         btn_4.whileTrue(m_intake.setSetpoint(IntakeOptions.INTAKE));
         btn_3.whileTrue(m_intake.setSetpoint(IntakeOptions.UNJAM));
         btn_2.whileTrue(m_intake.setSetpoint(IntakeOptions.MIDDLE));

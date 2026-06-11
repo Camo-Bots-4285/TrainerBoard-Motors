@@ -6,17 +6,15 @@ import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-import frc.lib.W8.io.motor.MotorIO.PIDSlot;
-import frc.lib.W8.mechanisms.flywheel.FlywheelMechanism;
-import frc.lib.W8.util.LoggerHelper;
+import frc.lib.io.motor.MotorIO.PIDSlot;
+import frc.lib.mechanisms.flywheel.FlywheelMechanism;
+import frc.lib.util.LoggerHelper;
 
 import frc.robot.Constants.DoubleMotorConstants;
 import frc.robot.Constants.DoubleMotorConstants.Setpoint;
@@ -24,9 +22,9 @@ import frc.robot.Constants.DoubleMotorConstants.Setpoint;
 
 public class DoubleMotor extends SubsystemBase {
 
-    private final FlywheelMechanism io;
+    private final FlywheelMechanism<?> io;
 
-    public DoubleMotor(FlywheelMechanism io)
+    public DoubleMotor(FlywheelMechanism<?> io)
     {
         this.io = io;
     }
@@ -43,10 +41,7 @@ public class DoubleMotor extends SubsystemBase {
     public Command setSetpoint(Setpoint setpoint)
     {
         return this.runOnce(
-            () -> io.runPosition(setpoint.getSetpoint(),
-                DoubleMotorConstants.CRUISE_VELOCITY,
-                DoubleMotorConstants.ACCELERATION, DoubleMotorConstants.JERK,
-                PIDSlot.SLOT_0))
+            () -> io.runPosition(setpoint.getSetpoint(), PIDSlot.SLOT_0))
             .withName("Go To "  + setpoint.name() + " Setpoint");
     };
 
@@ -94,9 +89,6 @@ public class DoubleMotor extends SubsystemBase {
     
                 io.runPosition(
                     Rotation.of(position),
-                    DoubleMotorConstants.CRUISE_VELOCITY,
-                    DoubleMotorConstants.ACCELERATION,
-                    DoubleMotorConstants.JERK,
                     PIDSlot.SLOT_0
                 );
             },
