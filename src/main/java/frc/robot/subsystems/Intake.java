@@ -6,6 +6,7 @@ import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -14,6 +15,7 @@ import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
 import frc.lib.util.LoggerHelper;
 import frc.robot.Constants.IntakeConstants;
+import frc.robot.Constants.DoubleMotorConstants.Setpoint;
 import frc.robot.Constants.IntakeConstants.IntakeOptions;
 
 public class Intake extends SubsystemBase{
@@ -49,14 +51,24 @@ public class Intake extends SubsystemBase{
         return this.run(
         ()-> {
 
-        Wheels.runVelocity(Setpoint.getWheelsspeed().getSetpoint(), PIDSlot.SLOT_3);
+        
+        if(Setpoint == IntakeOptions.STOP) {Wheels.runCoast();}else {Wheels.runVelocity(Setpoint.getWheelsspeed().getSetpoint(), PIDSlot.SLOT_3);}
 
         Pivot.runUnprofiledPosition(Setpoint.getPivotangle().getSetpoint(), PIDSlot.SLOT_0);
         
         }
     ).withName("Go to " + Setpoint);
     }
+public Command setPoint (Angle target){
+ return this.run(
+    ()-> {
+
+        Wheels.runUnprofiledPosition(target,PIDSlot.SLOT_0);
+
+    }
+ ).withName("Go to" + target.in(Rotations));
 
 
+}
 
 }

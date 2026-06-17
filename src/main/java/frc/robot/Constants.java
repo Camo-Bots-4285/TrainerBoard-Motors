@@ -58,7 +58,7 @@ public final class Constants {
     public static final Mode simMode = Mode.SIM;
     public static final Mode currentMode = RobotBase.isReal() ? Mode.REAL : simMode;
 
-    public static final boolean tuningMode = false;
+    public static final boolean tuningMode =true;
     public static final boolean disableHAL = false;
 
     public static enum Mode {
@@ -114,8 +114,8 @@ public final class Constants {
         public static final Angle TOLERANCE_POSITION  = Rotations.of(0.01);
         public static final AngularVelocity TOLERANCE_VELOCITY = RotationsPerSecond.of(0.01);
     
-        public static final AngularVelocity CRUISE_VELOCITY = RotationsPerSecond.of(0.2);
-        public static final AngularAcceleration ACCELERATION = RotationsPerSecondPerSecond.of(0.1);
+        public static final AngularVelocity CRUISE_VELOCITY = RotationsPerSecond.of(1.5);
+        public static final AngularAcceleration ACCELERATION = RotationsPerSecondPerSecond.of(0.5);
         public static final Velocity<edu.wpi.first.units.AngularAccelerationUnit> JERK = ACCELERATION.per(Second);
     
         private static final double ROTOR_TO_SENSOR = (1.0 / 1.0);
@@ -138,8 +138,8 @@ public final class Constants {
     
         public static final Setpoint DEFAULT_SETPOINT = Setpoint.STOP;
 
-        public static final PID SLOT0_PID = new PID(10.0, 0.0, 0.0).withS(0.0); //Postion
-        public static final PID SLOT1_PID = new PID(0.01, 0.0, 0.0).withV(0.511); // Velocity
+        public static final PID SLOT0_PID = new PID(5.0, 0.0, 0.0).withS(0.0); //Postion
+        public static final PID SLOT1_PID = new PID(0.01, 0.0, 0.0).withV(6.0).withS(0.15); // Velocity
 
         public static SparkMaxConfig getREVConfig()
         {
@@ -269,7 +269,7 @@ public final class Constants {
             default:
                 throw new IllegalStateException("Unrecognized Robot Mode");
         }
-        mechanism.enableTunablePID(PIDSlot.SLOT_0, SLOT0_PID);
+        mechanism.enableTunablePID(PIDSlot.SLOT_3, SLOT1_PID);
 
         return mechanism;
     }
@@ -282,7 +282,7 @@ public final class Constants {
         @Getter
         public enum Setpoint {
             STOP(RotationsPerSecond.of(0)),
-            INTAKE(RotationsPerSecond.of(0.75)),
+            INTAKE(RadiansPerSecond.of(6)),
             UNJAM(RotationsPerSecond.of(-0.25)),
             FUNBOB(RotationsPerSecond.of(0.5));
 

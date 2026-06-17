@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.*;
 import static edu.wpi.first.units.Units.Rotation;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
@@ -26,6 +27,7 @@ import frc.robot.HumanInterface.StateMachine.StateManager;
 import frc.robot.subsystems.DoubleMotor;
 import frc.robot.subsystems.Motors;
 import frc.robot.subsystems.SingleMotor;
+import frc.robot.subsystems.Turret;
 import frc.robot.subsystems.Intake;
 
 
@@ -50,9 +52,9 @@ public class RobotContainer {
     //private final SingleMotor m_singleMotor = new SingleMotor(SingleMotorConstants.getSingleMotorIO());
     //private final DoubleMotor m_doubleMotor = new DoubleMotor(DoubleMotorConstants.getDoubleMotorIO());
 
-    private final Intake m_intake = new Intake(SingleMotorConstants.getSingleMotorIO(), DoubleMotorConstants.getDoubleMotorIO());
+    //private final Intake m_intake = new Intake(SingleMotorConstants.getSingleMotorIO(), DoubleMotorConstants.getDoubleMotorIO());
     //private final Intake m_intake = new Intake(SingleMotorConstants.getSingleMotorIO(), new FlywheelMechanism<>("NAME", new MotorIO(){}) {});
-
+    private final Turret m_Turret = new Turret(SingleMotorConstants.getSingleMotorIO(), DoubleMotorConstants.getDoubleMotorIO());
     //private final ArmSubsytem m_FlyWheel = new ArmSubsytem();
     //private final Motors m_motor = new Motors();
 
@@ -103,13 +105,16 @@ public class RobotContainer {
         //btn_3.whileTrue(m_singleMotor.setVelocity(SingleMotorConstants.Setpoint.UNJAM).alongWith(m_doubleMotor.setSetpoint(DoubleMotorConstants.Setpoint.RAISED)).withName("Unjam"));
         //btn_2.whileTrue(m_singleMotor.setVelocity(SingleMotorConstants.Setpoint.FUNBOB).alongWith(m_doubleMotor.setSetpoint(DoubleMotorConstants.Setpoint.FUNBOB)).withName("FUNBOB"));
 
-        m_intake.setDefaultCommand(m_intake.setSetpoint(IntakeOptions.STOP));
-        
-        btn_4.whileTrue(m_intake.setSetpoint(IntakeOptions.INTAKE));
-        btn_3.whileTrue(m_intake.setSetpoint(IntakeOptions.UNJAM));
-        btn_2.whileTrue(m_intake.setSetpoint(IntakeOptions.MIDDLE));
+    //     m_intake.setDefaultCommand(m_intake.setSetpoint(IntakeOptions.STOP));
+    //     btn_7.whileTrue(m_intake.setPoint(Degrees.of(0)));
+    //    btn_5.whileTrue(m_intake.setPoint(Degrees.of(90)));
+    //    btn_8.whileTrue(m_intake.setPoint(Degrees.of(-90)));
 
-
+    //     btn_4.whileTrue(m_intake.setSetpoint(IntakeOptions.INTAKE));
+    //     btn_3.whileTrue(m_intake.setSetpoint(IntakeOptions.UNJAM));
+    //     btn_2.whileTrue(m_intake.setSetpoint(IntakeOptions.MIDDLE));
+        //btn_1.whileTrue(m_intake.setSetpoint(IntakeOptions.STOP));
+m_Turret.setDefaultCommand(m_Turret.setAim(()-> Degrees.of(0),()-> Degrees.of(0)));
 
     }
 
