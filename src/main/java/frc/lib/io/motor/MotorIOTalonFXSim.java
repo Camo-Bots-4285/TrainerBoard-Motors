@@ -56,6 +56,15 @@ public class MotorIOTalonFXSim extends MotorIOTalonFX implements MotorIOSim {
         simState = super.motor.getSimState();
     }
 
+    /**
+     * Pushes a mechanism position from a WPILib physics simulation into the simulated motor.
+     *
+     * <p>Note the gear ratio conversion here: {@code setRawRotorPosition} wants <b>rotor</b>
+     * rotations, so the mechanism angle has to be scaled up by the full gear ratio. Contrast with
+     * {@link MotorIO#setEncoderPosition(Angle)}, which is inherited unchanged and does <b>not</b>
+     * convert, because {@code TalonFX.setPosition()} already works in mechanism units and applies
+     * the gear ratio internally.
+     */
     @Override
     public void setPosition(Angle position) {
         simState.setRawRotorPosition(position.times(rotorToSensorRatio * sensorToMechanismRatio));
@@ -82,16 +91,12 @@ public class MotorIOTalonFXSim extends MotorIOTalonFX implements MotorIOSim {
     }
 
     @Override
-    public void setEncoderPosition(Angle position) {
-        super.setEncoderPosition(position.times(rotorToSensorRatio * sensorToMechanismRatio));
-    }
-
-    @Override
     public void updateInputs(MotorInputs inputs) {
         inputs.connected =
                 BaseStatusSignal.refreshAll(
                                 super.position,
                                 super.velocity,
+                                super.motorVoltage,
                                 super.supplyVoltage,
                                 super.supplyCurrent,
                                 super.torqueCurrent,

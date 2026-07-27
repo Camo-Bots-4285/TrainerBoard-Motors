@@ -43,12 +43,20 @@ import org.littletonrobotics.junction.AutoLog;
  */
 public interface MotorIO extends AutoCloseable {
 
+    /**
+     * A set of PID/feedforward gains stored on the motor controller.
+     *
+     * <p><b>Not every motor supports every slot.</b> REV SPARK controllers have four slots
+     * (0&ndash;3), but CTRE TalonFX controllers only have three (0&ndash;2). Using {@link #SLOT_3}
+     * with a TalonFX will throw, so prefer slots 0&ndash;2 for code that has to work on both.
+     */
     @Getter
     @AllArgsConstructor
     public enum PIDSlot {
         SLOT_0(0),
         SLOT_1(1),
         SLOT_2(2),
+        /** Supported by REV SPARK controllers only. TalonFX has no fourth slot. */
         SLOT_3(3);
 
         public final int num;
@@ -61,8 +69,22 @@ public interface MotorIO extends AutoCloseable {
         CURRENT,
         DUTYCYCLE,
         POSITION,
-        VELOCITY
+        VELOCITY,
+        /**
+         * The control mode could not be determined, or the motor is in a mode this library does not
+         * model. Used instead of {@code null} so logging and replay keep working.
+         */
+        UNKNOWN
     }
+
+    /**
+     * Value logged for a measurement the underlying motor controller cannot report.
+     *
+     * <p>Never assign {@code null} to a field on {@link MotorInputs}: AdvantageKit silently drops
+     * null fields when writing logs and throws when reading them back during replay. NaN shows up
+     * as a gap in AdvantageScope, which reads as "no data" without breaking anything.
+     */
+    public static final double UNSUPPORTED_SIGNAL = Double.NaN;
 
     @AutoLog
     abstract class MotorInputs {

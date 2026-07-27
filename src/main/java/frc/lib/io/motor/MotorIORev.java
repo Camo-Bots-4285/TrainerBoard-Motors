@@ -21,11 +21,14 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
+import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.Alert.AlertType;
 import frc.lib.util.Device;
 import frc.lib.util.PID;
 
@@ -67,9 +70,18 @@ public class MotorIORev implements MotorIO {
     protected final com.revrobotics.spark.SparkBase.ControlType velocityControl = com.revrobotics.spark.SparkBase.ControlType.kMAXMotionVelocityControl;
     protected final com.revrobotics.spark.SparkBase.ControlType unprofiledVelocityControl = com.revrobotics.spark.SparkBase.ControlType.kVelocity;
 
-    // Caches for last-applied MAX Motion parameters (NaN = never applied)
+    // Caches for last-applied MAX Motion parameters (NaN = never applied).
+    // Compare these with Double.compare, never ==, so that the "never applied" NaN state does not
+    // silently defeat the cache: NaN == NaN is false in Java, which would make every call
+    // reconfigure the motor over CAN.
     private double lastRequestedMaxMotionVelocity = Double.NaN;
     private double lastRequestedMaxMotionAcceleration = Double.NaN;
+
+    /** Warns if code asks for a duty cycle cap on current control, which REV cannot do. */
+    private final Alert currentDutyCycleUnsupportedAlert;
+
+    /** Warns if code asks to bypass soft limits, which REV cannot do per-request. */
+    private final Alert softLimitOverrideUnsupportedAlert;
 
     /**
      * Constructs and initializes a REV motor.
@@ -92,6 +104,22 @@ public class MotorIORev implements MotorIO {
         Device.CAN CAN,
         RevFollower... followerData)
     {
+
+        currentDutyCycleUnsupportedAlert =
+                new Alert(
+                        name
+                                + ": runCurrent(current, dutyCycle) ignores the duty cycle limit on"
+                                + " REV motors. The current was applied, but top speed is not"
+                                + " capped.",
+                        AlertType.kWarning);
+
+        softLimitOverrideUnsupportedAlert =
+                new Alert(
+                        name
+                                + ": runDutyCycle(dutyCycle, ignoringSoftLimits) cannot bypass soft"
+                                + " limits on REV motors. The configured soft limits are still"
+                                + " being enforced.",
+                        AlertType.kWarning);
 
         // Initialize motor based on whether it's flex or not
         if (config instanceof SparkFlexConfig) {
@@ -268,7 +296,9 @@ public class MotorIORev implements MotorIO {
         ifOk(motor, motor::getOutputCurrent,
             (value) -> inputs.supplyCurrent = Amps.of(value));
 
-        inputs.torqueCurrent = null;
+        // REVLib exposes no torque-producing current signal. Log NaN rather than null: null is
+        // silently dropped when writing logs and throws when reading them back during replay.
+        inputs.torqueCurrent = Amps.of(UNSUPPORTED_SIGNAL);
 
         ifOk(motor, motor::getMotorTemperature,
             (value) -> inputs.temperature = Celsius.of(value));
@@ -387,10 +417,41 @@ public class MotorIORev implements MotorIO {
         controller.setSetpoint(current.in(Amps), currentControl);
     }
 
+    /**
+     * Runs the motor at a target current.
+     *
+     * <p><b>REV limitation:</b> a SPARK cannot cap the duty cycle of a current request the way a
+     * TalonFX can, so {@code dutyCycle} is not enforced. The current is still applied, and a
+     * dashboard warning is raised so this does not fail silently.
+     *
+     * @param current Desired torque-producing current
+     * @param dutyCycle Ignored on REV motors
+     */
+    @Override
+    public void runCurrent(Current current, double dutyCycle)
+    {
+        currentDutyCycleUnsupportedAlert.set(dutyCycle < 1.0);
+
+        runCurrent(current);
+    }
+
+    /**
+     * Runs the motor using duty cycle (percentage of available voltage).
+     *
+     * <p><b>REV limitation:</b> a SPARK has no per-request soft limit override, so
+     * {@code ignoringSoftLimits} is not honored. Whatever the config set up stays in effect.
+     * Supporting it would mean writing a new config over CAN and restoring the configured state
+     * afterwards; until that exists, a dashboard warning is raised so this does not fail silently.
+     *
+     * @param dutyCycle Fractional output between -1 and 1
+     * @param ignoringSoftLimits Ignored on REV motors
+     */
     @Override
     public void runDutyCycle(double dutyCycle, boolean ignoringSoftLimits)
     {
-        motor.set(dutyCycle);
+        softLimitOverrideUnsupportedAlert.set(ignoringSoftLimits);
+
+        motor.set(MathUtil.clamp(dutyCycle, -1.0, 1.0));
     }
 
     @Override
@@ -430,7 +491,9 @@ public class MotorIORev implements MotorIO {
         PIDSlot slot){
         double newAccel = acceleration.in(RotationsPerSecondPerSecond);
 
-        queueMaxMotionConfigUpdate(lastRequestedMaxMotionVelocity, newAccel);
+        // Only the acceleration is being changed here. Passing the cached cruise velocity back in
+        // would write NaN to the motor before any position request has ever set one.
+        queueMaxMotionAccelerationUpdate(newAccel);
 
         controller.setSetpoint(velocity.in(RotationsPerSecond),
             velocityControl,
@@ -444,11 +507,16 @@ public class MotorIORev implements MotorIO {
 
     }
 
-    private void queueMaxMotionConfigUpdate(
-    double maxVelocity,
-    double maxAcceleration) {
-        if (maxVelocity == lastRequestedMaxMotionVelocity
-                && maxAcceleration == lastRequestedMaxMotionAcceleration) {
+    /**
+     * Applies new MAX Motion cruise velocity and acceleration limits, skipping the write if the
+     * motor already has these values.
+     *
+     * @param maxVelocity Cruise velocity, in the units implied by the encoder conversion factors
+     * @param maxAcceleration Acceleration, in the units implied by the encoder conversion factors
+     */
+    private void queueMaxMotionConfigUpdate(double maxVelocity, double maxAcceleration) {
+        if (Double.compare(maxVelocity, lastRequestedMaxMotionVelocity) == 0
+                && Double.compare(maxAcceleration, lastRequestedMaxMotionAcceleration) == 0) {
             return;
         }
 
@@ -456,22 +524,41 @@ public class MotorIORev implements MotorIO {
         lastRequestedMaxMotionAcceleration = maxAcceleration;
 
         SparkBaseConfig config = newEmptyConfig();
-
         config.closedLoop.maxMotion
-            
             .cruiseVelocity(maxVelocity)
             .maxAcceleration(maxAcceleration);
 
-            tryUntilOk(
-                motor,
-                5,
-                () -> motor.configure(
-                    config,
-                    ResetMode.kNoResetSafeParameters,
-                    PersistMode.kNoPersistParameters
-                )
-            );
-        
+        applyMaxMotionConfig(config);
+    }
+
+    /**
+     * Applies a new MAX Motion acceleration limit, leaving the cruise velocity untouched.
+     *
+     * @param maxAcceleration Acceleration, in the units implied by the encoder conversion factors
+     */
+    private void queueMaxMotionAccelerationUpdate(double maxAcceleration) {
+        if (Double.compare(maxAcceleration, lastRequestedMaxMotionAcceleration) == 0) {
+            return;
+        }
+
+        lastRequestedMaxMotionAcceleration = maxAcceleration;
+
+        SparkBaseConfig config = newEmptyConfig();
+        config.closedLoop.maxMotion.maxAcceleration(maxAcceleration);
+
+        applyMaxMotionConfig(config);
+    }
+
+    private void applyMaxMotionConfig(SparkBaseConfig config) {
+        tryUntilOk(
+            motor,
+            5,
+            () -> motor.configure(
+                config,
+                ResetMode.kNoResetSafeParameters,
+                PersistMode.kNoPersistParameters
+            )
+        );
     }
 
 
