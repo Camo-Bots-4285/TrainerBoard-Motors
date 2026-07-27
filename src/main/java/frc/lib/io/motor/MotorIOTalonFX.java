@@ -63,6 +63,11 @@ public class MotorIOTalonFX implements MotorIO {
     // Cached signals for performance and easier access
     protected final StatusSignal<Angle> position;
     protected final StatusSignal<AngularVelocity> velocity;
+
+    /** Voltage actually applied to the motor windings. This is what "output voltage" means. */
+    protected final StatusSignal<Voltage> motorVoltage;
+
+    /** Battery voltage supplied to the controller. Sits near 12V regardless of motor output. */
     protected final StatusSignal<Voltage> supplyVoltage;
     protected final StatusSignal<Current> supplyCurrent;
     protected final StatusSignal<Current> torqueCurrent;
@@ -173,6 +178,7 @@ public class MotorIOTalonFX implements MotorIO {
 
         position = motor.getPosition();
         velocity = motor.getVelocity();
+        motorVoltage = motor.getMotorVoltage();
         supplyVoltage = motor.getSupplyVoltage();
         supplyCurrent = motor.getSupplyCurrent();
         torqueCurrent = motor.getTorqueCurrent();
@@ -188,6 +194,7 @@ public class MotorIOTalonFX implements MotorIO {
                                         100.0,
                                         position,
                                         velocity,
+                                        motorVoltage,
                                         supplyVoltage,
                                         supplyCurrent,
                                         torqueCurrent,
@@ -281,6 +288,7 @@ public class MotorIOTalonFX implements MotorIO {
                 BaseStatusSignal.refreshAll(
                                 position,
                                 velocity,
+                                motorVoltage,
                                 supplyVoltage,
                                 supplyCurrent,
                                 torqueCurrent,
@@ -298,7 +306,7 @@ public class MotorIOTalonFX implements MotorIO {
 
         inputs.position = position.getValue();
         inputs.velocity = velocity.getValue();
-        inputs.appliedVoltage = supplyVoltage.getValue();
+        inputs.appliedVoltage = motorVoltage.getValue();
         inputs.supplyCurrent = supplyCurrent.getValue();
         inputs.torqueCurrent = torqueCurrent.getValue();
         inputs.temperature = temperature.getValue();
@@ -608,12 +616,27 @@ public class MotorIOTalonFX implements MotorIO {
                         });
     }
 
+    /**
+     * Updates one PID slot on the motor.
+     *
+     * <p>A TalonFX only has three gain slots, so {@link PIDSlot#SLOT_3} cannot be used here even
+     * though REV SPARK controllers support it.
+     *
+     * @param slot The slot to update; must be SLOT_0, SLOT_1, or SLOT_2
+     * @param pid The PID to set
+     * @throws IllegalArgumentException if given a slot the TalonFX does not have
+     */
     @Override
     public void setPID(PIDSlot slot, PID pid) {
         switch (slot) {
             case SLOT_0 -> setPIDSlot0(pid);
             case SLOT_1 -> setPIDSlot1(pid);
             case SLOT_2 -> setPIDSlot2(pid);
+            default ->
+                    throw new IllegalArgumentException(
+                            "TalonFX only has PID slots 0-2, but "
+                                    + slot
+                                    + " was requested. Use SLOT_0, SLOT_1, or SLOT_2 instead.");
         }
     }
 
