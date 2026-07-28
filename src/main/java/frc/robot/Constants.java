@@ -31,6 +31,9 @@ import edu.wpi.first.units.measure.Velocity;
 import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.FeedbackSensor;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import com.thethriftybot.devices.ThriftyNova;
+import com.thethriftybot.devices.ThriftyNova.CurrentType;
+import com.thethriftybot.devices.ThriftyNova.ThriftyNovaConfig;
 import com.revrobotics.spark.config.MAXMotionConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
@@ -162,7 +165,7 @@ public final class Constants {
 
             config.encoder
             .positionConversionFactor(1/SENSOR_TO_MECHANISM)
-            .velocityConversionFactor(1/SENSOR_TO_MECHANISM/60);
+            .velocityConversionFactor(1/SENSOR_TO_MECHANISM);
             //Uncomment if using velocity control
             // .uvwMeasurementPeriod(10)
             // .uvwAverageDepth(2);
@@ -245,6 +248,52 @@ public final class Constants {
     
             return config;
         }
+
+public static ThriftyNova.ThriftyNovaConfig getThriftyNovaConfig() {
+    ThriftyNova.ThriftyNovaConfig config = new ThriftyNova.ThriftyNovaConfig();
+
+    // =========================
+    // General Configuration
+    // =========================
+    config.motorType = ThriftyNova.MotorType.NEO;
+    config.maxCurrent = 60.0;
+    config.currentType = CurrentType.SUPPLY;
+    config.voltageCompensation = 12.0;
+    config.brakeMode = false;
+    config.inverted = false;
+
+    // =========================
+    // Soft Limits
+    // =========================
+    config.forwardSoftLimit = MAX_ANGLE.in(Rotations);
+    config.reverseSoftLimit = MIN_ANGLE.in(Rotations);
+    config.enableSoftLimits = false;
+
+    // =========================
+    // PID Slot 0 (Position)
+    // =========================
+    config.pid0.p = SLOT0_PID.P();
+    config.pid0.i = SLOT0_PID.I();
+    config.pid0.d = SLOT0_PID.D();
+    config.pid0.f = SLOT0_PID.V();
+    config.pid0.iZone = 0.0;
+    config.pid0.allowableError = TOLERANCE_POSITION.in(Rotations);
+
+    // =========================
+    // PID Slot 1 (Velocity)
+    // =========================
+    config.pid1.p = SLOT1_PID.P();
+    config.pid1.i = SLOT1_PID.I();
+    config.pid1.d = SLOT1_PID.D();
+    config.pid1.f = SLOT1_PID.V();
+    config.pid1.iZone = 0.0;
+    config.pid1.allowableError = TOLERANCE_VELOCITY.in(RotationsPerSecond);
+
+    return config;
+}
+
+
+
 
     public static FlywheelMechanism<?> getSingleMotorIO()
     {
@@ -367,7 +416,7 @@ public final class Constants {
 
             config.encoder
             .positionConversionFactor(1/SENSOR_TO_MECHANISM)
-            .velocityConversionFactor(1/SENSOR_TO_MECHANISM/60);
+            .velocityConversionFactor(1/SENSOR_TO_MECHANISM);
             //Uncomment if using velocity control
             // .uvwMeasurementPeriod(10)
             // .uvwAverageDepth(2);
@@ -486,8 +535,8 @@ public final class Constants {
         @SuppressWarnings("Immutable")
         @Getter
         public enum Setpoint {
-            STOW(Rotations.of(0)),
-            RAISED(Rotations.of(1.0)),
+            STOW(Rotations.of(-0.275)),
+            RAISED(Rotations.of(0.0)),
             FUNBOB(Rotations.of(.5));        
             
             private final Angle setpoint;
@@ -496,8 +545,6 @@ public final class Constants {
 
     public class IntakeConstants {
         public static final String NAME = "3_Intake";
-
-
 
         @RequiredArgsConstructor
         @SuppressWarnings("Immutable")
