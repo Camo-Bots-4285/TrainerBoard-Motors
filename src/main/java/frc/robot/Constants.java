@@ -162,7 +162,7 @@ public final class Constants {
 
             config.encoder
             .positionConversionFactor(1/SENSOR_TO_MECHANISM)
-            .velocityConversionFactor(1/SENSOR_TO_MECHANISM/60);
+            .velocityConversionFactor(1/SENSOR_TO_MECHANISM);
             //Uncomment if using velocity control
             // .uvwMeasurementPeriod(10)
             // .uvwAverageDepth(2);
@@ -367,7 +367,7 @@ public final class Constants {
 
             config.encoder
             .positionConversionFactor(1/SENSOR_TO_MECHANISM)
-            .velocityConversionFactor(1/SENSOR_TO_MECHANISM/60);
+            .velocityConversionFactor(1/SENSOR_TO_MECHANISM);
             //Uncomment if using velocity control
             // .uvwMeasurementPeriod(10)
             // .uvwAverageDepth(2);

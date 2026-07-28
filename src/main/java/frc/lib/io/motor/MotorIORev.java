@@ -286,7 +286,7 @@ public class MotorIORev implements MotorIO {
             (value) -> inputs.position = Rotation.of(value));
 
         ifOk(motor, encoder::getVelocity,
-            (value) -> inputs.velocity = RotationsPerSecond.of(value));
+            (value) -> inputs.velocity = RPM.of(value));
 
         ifOk(motor,
             new DoubleSupplier[] { motor::getAppliedOutput, motor::getBusVoltage },
@@ -310,11 +310,11 @@ public class MotorIORev implements MotorIO {
 
         // Default everything to zero
         inputs.goalPosition = Rotations.zero();
-        inputs.goalVelocity = RotationsPerSecond.zero();
+        inputs.goalVelocity = RPM.zero();
         inputs.positionError = Rotations.zero();
-        inputs.velocityError = RotationsPerSecond.zero();
+        inputs.velocityError = RPM.zero();
         inputs.activeTrajectoryPosition = Rotations.zero();
-        inputs.activeTrajectoryVelocity = RotationsPerSecond.zero();
+        inputs.activeTrajectoryVelocity = RPM.zero();
 
         if (isRunningPositionControl) {
         ifOk(
@@ -332,7 +332,7 @@ public class MotorIORev implements MotorIO {
                 motor,
                 () -> motor.getClosedLoopController().getMAXMotionSetpointVelocity(),
                 value -> inputs.activeTrajectoryVelocity =
-                    RotationsPerSecond.of(value));
+                    RPM.of(value));
         }
 
         inputs.positionError =
@@ -343,14 +343,14 @@ public class MotorIORev implements MotorIO {
                 motor,
                 () -> motor.getClosedLoopController().getSetpoint(),
                 value -> inputs.goalVelocity =
-                    RotationsPerSecond.of(value));
+                    RPM.of(value));
 
             if (isRunningMaxMotion) {
                 ifOk(
                     motor,
                     () -> motor.getClosedLoopController().getMAXMotionSetpointVelocity(),
                     value -> inputs.activeTrajectoryVelocity =
-                        RotationsPerSecond.of(value));
+                        RPM.of(value));
             }
 
             inputs.velocityError =
@@ -463,8 +463,8 @@ public class MotorIORev implements MotorIO {
     @Override
     public  void runPosition( Angle position, PIDSlot slot, AngularVelocity cruiseVelocity, AngularAcceleration acceleration) {
 
-        double newCruise = cruiseVelocity.in(RotationsPerSecond);
-        double newAccel = acceleration.in(RotationsPerSecondPerSecond);
+        double newCruise = cruiseVelocity.in(RPM);
+        double newAccel = acceleration.in(RotationsPerSecondPerSecond)*60; //Convert RPS per second to RPM per second
 
         queueMaxMotionConfigUpdate(newCruise, newAccel);
 
@@ -474,13 +474,13 @@ public class MotorIORev implements MotorIO {
 
     @Override
     public void runUnprofiledPosition(Angle position, PIDSlot slot) {
-        controller.setReference(position.in(Rotation), unprofiledPositionControl,
+        controller.setSetpoint(position.in(Rotation), unprofiledPositionControl,
             getClosedLoopSlot(slot));
     }
 
     @Override
     public void runVelocity(AngularVelocity velocity, PIDSlot slot){
-        controller.setSetpoint(velocity.in(RotationsPerSecond),
+        controller.setSetpoint(velocity.in(RPM),
             unprofiledVelocityControl,
             getClosedLoopSlot(slot));
     }
@@ -489,13 +489,13 @@ public class MotorIORev implements MotorIO {
     @Override
     public void runVelocity(AngularVelocity velocity, AngularAcceleration acceleration,
         PIDSlot slot){
-        double newAccel = acceleration.in(RotationsPerSecondPerSecond);
+        double newAccel = acceleration.in(RotationsPerSecondPerSecond)*60; //Convert RPS per second to RPM per second
 
         // Only the acceleration is being changed here. Passing the cached cruise velocity back in
         // would write NaN to the motor before any position request has ever set one.
         queueMaxMotionAccelerationUpdate(newAccel);
 
-        controller.setSetpoint(velocity.in(RotationsPerSecond),
+        controller.setSetpoint(velocity.in(RPM),
             velocityControl,
             getClosedLoopSlot(slot));
     }
@@ -511,8 +511,8 @@ public class MotorIORev implements MotorIO {
      * Applies new MAX Motion cruise velocity and acceleration limits, skipping the write if the
      * motor already has these values.
      *
-     * @param maxVelocity Cruise velocity, in the units implied by the encoder conversion factors
-     * @param maxAcceleration Acceleration, in the units implied by the encoder conversion factors
+     * @param maxVelocity Cruise velocity, in the RPM
+     * @param maxAcceleration Acceleration, in the units RPM per second
      */
     private void queueMaxMotionConfigUpdate(double maxVelocity, double maxAcceleration) {
         if (Double.compare(maxVelocity, lastRequestedMaxMotionVelocity) == 0
@@ -524,7 +524,9 @@ public class MotorIORev implements MotorIO {
         lastRequestedMaxMotionAcceleration = maxAcceleration;
 
         SparkBaseConfig config = newEmptyConfig();
+
         config.closedLoop.maxMotion
+            
             .cruiseVelocity(maxVelocity)
             .maxAcceleration(maxAcceleration);
 
@@ -534,7 +536,7 @@ public class MotorIORev implements MotorIO {
     /**
      * Applies a new MAX Motion acceleration limit, leaving the cruise velocity untouched.
      *
-     * @param maxAcceleration Acceleration, in the units implied by the encoder conversion factors
+     * @param maxAcceleration Acceleration, in RPM per second
      */
     private void queueMaxMotionAccelerationUpdate(double maxAcceleration) {
         if (Double.compare(maxAcceleration, lastRequestedMaxMotionAcceleration) == 0) {
@@ -550,15 +552,15 @@ public class MotorIORev implements MotorIO {
     }
 
     private void applyMaxMotionConfig(SparkBaseConfig config) {
-        tryUntilOk(
-            motor,
-            5,
-            () -> motor.configure(
-                config,
-                ResetMode.kNoResetSafeParameters,
-                PersistMode.kNoPersistParameters
-            )
-        );
+            tryUntilOk(
+                motor,
+                5,
+                () -> motor.configure(
+                    config,
+                    ResetMode.kNoResetSafeParameters,
+                    PersistMode.kNoPersistParameters
+                )
+            );
     }
 
 
