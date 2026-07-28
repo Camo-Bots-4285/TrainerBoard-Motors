@@ -162,7 +162,7 @@ public final class Constants {
 
             config.encoder
             .positionConversionFactor(1/SENSOR_TO_MECHANISM)
-            .velocityConversionFactor(1/SENSOR_TO_MECHANISM/60);
+            .velocityConversionFactor(1/SENSOR_TO_MECHANISM);
             //Uncomment if using velocity control
             // .uvwMeasurementPeriod(10)
             // .uvwAverageDepth(2);
@@ -245,6 +245,8 @@ public final class Constants {
     
             return config;
         }
+
+
 
     public static FlywheelMechanism<?> getSingleMotorIO()
     {
@@ -367,7 +369,7 @@ public final class Constants {
 
             config.encoder
             .positionConversionFactor(1/SENSOR_TO_MECHANISM)
-            .velocityConversionFactor(1/SENSOR_TO_MECHANISM/60);
+            .velocityConversionFactor(1/SENSOR_TO_MECHANISM);
             //Uncomment if using velocity control
             // .uvwMeasurementPeriod(10)
             // .uvwAverageDepth(2);
@@ -486,8 +488,8 @@ public final class Constants {
         @SuppressWarnings("Immutable")
         @Getter
         public enum Setpoint {
-            STOW(Rotations.of(0)),
-            RAISED(Rotations.of(1.0)),
+            STOW(Rotations.of(-0.275)),
+            RAISED(Rotations.of(0.0)),
             FUNBOB(Rotations.of(.5));        
             
             private final Angle setpoint;
@@ -496,8 +498,6 @@ public final class Constants {
 
     public class IntakeConstants {
         public static final String NAME = "3_Intake";
-
-
 
         @RequiredArgsConstructor
         @SuppressWarnings("Immutable")

@@ -49,26 +49,25 @@ public class Intake extends SubsystemBase{
     public Command setSetpoint (IntakeOptions Setpoint) {
     
         return this.run(
-        ()-> {
+            ()-> {
 
-        
-        if(Setpoint == IntakeOptions.STOP) {Wheels.runCoast();}else {Wheels.runVelocity(Setpoint.getWheelsspeed().getSetpoint(), PIDSlot.SLOT_3);}
+            if(Setpoint == IntakeOptions.STOP) {Wheels.runCoast();}else {Wheels.runVelocity(Setpoint.getWheelsspeed().getSetpoint(), PIDSlot.SLOT_3);}
 
-        Pivot.runUnprofiledPosition(Setpoint.getPivotangle().getSetpoint(), PIDSlot.SLOT_0);
-        
-        }
-    ).withName("Go to " + Setpoint);
+            Pivot.runUnprofiledPosition(Setpoint.getPivotangle().getSetpoint(), PIDSlot.SLOT_0);
+            
+            }
+        ).withName("Go to " + Setpoint);
     }
-public Command setPoint (Angle target){
- return this.run(
-    ()-> {
 
-        Wheels.runUnprofiledPosition(target,PIDSlot.SLOT_0);
+    public Command setPoint (Angle target){
+        return this.run(
+            ()-> {
+
+                Wheels.runUnprofiledPosition(target,PIDSlot.SLOT_0);
+
+            }
+        ).withName("Go to" + target.in(Rotations));
 
     }
- ).withName("Go to" + target.in(Rotations));
-
-
-}
 
 }
