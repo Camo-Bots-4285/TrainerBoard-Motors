@@ -523,4 +523,57 @@ public final class Constants {
 
         public static final int LEADER_ID = 1;
     }
+
+
+    public class Shooter_Flywheel_Constants     {
+        final String NAME = "1_Shooter/Flywheel";
+
+    public static final AngularVelocity MAX_VELOCITY =
+        RotationsPerSecond.of(85);// 80% of max rps 106
+    public static final AngularAcceleration MAX_ACCELERATION = RotationsPerSecondPerSecond.of(85*10);
+
+
+    private static final double GEARING = (1.25/1.0);// just using the one from 2026 for now
+    
+    public static final AngularVelocity TOLERANCE = RotationsPerSecond.of(2.5);
+    
+    private static final DCMotor DCMOTOR = DCMOTOR.getFalcon500(1);
+    public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.0028125);
+    
+    public static final Distance FLYWHEEL_DISTANCE = Inches.of(2);
+    
+    /*Dis D IMPORTANT STUFF 4 U */
+
+    public static final AngularVelocity IDLE_VELOCITY = RotationsPerSecond(0);
+    //FILL DIS WITH DIFf RANGE U NEED WHILE NO AUTOSHOOT (HARDSTOPS)
+
+
+    // Velo pids
+    private static Slot0Configs SLOT0CONFIG = new Slot0Configs()
+    .withKP(0.035)
+    .withKI(0.0)
+    .withKD(0.00)
+    .withKV(0.01345)
+    .withKS(0.013);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }
