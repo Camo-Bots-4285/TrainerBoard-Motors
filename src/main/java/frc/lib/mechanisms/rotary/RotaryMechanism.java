@@ -5,6 +5,7 @@
 package frc.lib.mechanisms.rotary;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.units.BaseUnits;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
@@ -41,7 +42,12 @@ public abstract class RotaryMechanism<T extends MotorIO, E extends AbsoluteEncod
             Angle minAngle,
             Angle maxAngle,
             Angle startingAngle,
-            RotaryAxis axis) {}
+            RotaryAxis axis) {
+
+        public RotaryMechCharacteristics(Translation3d translation3d, Distance armLength2, Angle minAngle2,
+                Angle maxAngle2, Angle startingAngle2) {
+            //TODO Auto-generated constructor stub
+        }}
 
     protected final AbsoluteEncoderInputsAutoLogged absoluteEncoderInputs =
             new AbsoluteEncoderInputsAutoLogged();

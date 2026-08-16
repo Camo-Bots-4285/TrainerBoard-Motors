@@ -18,8 +18,10 @@ import lombok.RequiredArgsConstructor;
 
 import static edu.wpi.first.units.Units.*;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.units.AngularAccelerationUnit;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -28,6 +30,7 @@ import edu.wpi.first.units.measure.Mass;
 import edu.wpi.first.units.measure.MomentOfInertia;
 import edu.wpi.first.units.measure.Velocity;
 
+import com.ctre.phoenix6.configs.Slot0Configs;
 import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.FeedbackSensor;
 import com.revrobotics.spark.config.SparkMaxConfig;
@@ -537,14 +540,14 @@ public final class Constants {
     
     public static final AngularVelocity TOLERANCE = RotationsPerSecond.of(2.5);
     
-    private static final DCMotor DCMOTOR = DCMOTOR.getFalcon500(1);
+    private static final DCMotor DCMOTOR = DCMotor.getMinion(1);
     public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.0028125);
     
     public static final Distance FLYWHEEL_DISTANCE = Inches.of(2);
     
     /*Dis D IMPORTANT STUFF 4 U */
 
-    public static final AngularVelocity IDLE_VELOCITY = RotationsPerSecond(0);
+    public static final AngularVelocity IDLE_VELOCITY = RotationsPerSecond.of(0);
     //FILL DIS WITH DIFf RANGE U NEED WHILE NO AUTOSHOOT (HARDSTOPS)
 
 
@@ -557,7 +560,60 @@ public final class Constants {
     .withKS(0.013);
 
 
+public static final class Shooter_Hood_Constants {
+public static final String Name = "Turret_Hood";
 
+public static final Angle TOLERANCE = Degrees.of(.25);
+
+public static final AngularVelocity CRUISE_VELOCITY = 
+    RadiansPerSecond.of(1);
+public static final AngularAcceleration ACCELERATION = 
+    CRUISE_VELOCITY.div(0.1).per(Second);
+ public static final Velocity<AngularAccelerationUnit> JERK = ACCELERATION.per(Second);
+private static final double SENSOR_TO_MECHANISM = (350.0 / 1.0);
+
+    public static final Angle MIN_ANGLE = Degrees.of(0);
+    public static final Angle MAX_ANGLE = Degrees.of(18);
+    public static final Angle STARTING_ANGLE = MIN_ANGLE;
+    public static final Angle TRENCH_SHOOT = Degree.of(5);
+    public static final Distance ARM_LENGTH = Meters.of(0.5);
+
+    public static final RotaryMechCharacteristics CONSTANTS =
+        new RotaryMechCharacteristics(
+            new Translation3d(), 
+            ARM_LENGTH,
+            MIN_ANGLE,
+            MAX_ANGLE,
+            STARTING_ANGLE
+           );
+
+    public static final Mass ARM_MASS = Kilograms.of(0.5);
+    public static final DCMotor DCMOTOR = DCMotor.getKrakenX44(1);
+    public static final MomentOfInertia MOI = KilogramSquareMeters
+        .of(SingleJointedArmSim.estimateMOI(ARM_LENGTH.in(Meters), ARM_MASS.in(Kilograms)));
+
+
+        private static Slot0Configs SLOT0CONFIG = new Slot0Configs()
+        .withKP(100)//3.0
+        .withKI(0.0)
+        .withKD(0.0)
+        .withKV(0.0)
+        .withKS(0.30);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ }
 
 
 
