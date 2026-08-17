@@ -6,8 +6,10 @@ import java.util.function.Supplier;
 
 import org.littletonrobotics.junction.Logger;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.units.AngleUnit;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -72,7 +74,7 @@ return Wrap;
 
 
 
-public Command setAim(Supplier<Angle> rawPitch, Supplier<Angle> rawYaw){
+public Command setAim(Supplier<Angle> rawPitch, Supplier<Angle> rawYaw,Supplier<Angle> pose2d){
 
 
     return this.run(
@@ -84,11 +86,60 @@ public Command setAim(Supplier<Angle> rawPitch, Supplier<Angle> rawYaw){
            Yaw.runUnprofiledPosition(Yaw_, PIDSlot.SLOT_0);
             Pitch.runUnprofiledPosition(Pitch_, PIDSlot.SLOT_0);
 
-        }
+            AngleUnit degrees;
+            
+                    
+            
+                    
+                    
+                    }
+            
+            
+            
+                );
+            
+            }
+            
+            
+            public Command lookFowards(Supplier<Angle> rawPitch, Supplier<Angle> rawYaw, Supplier<Angle> pose2d){
+
+
+ return this.run(
+    ()-> {
+             Angle Yaw_ = turretFilter(rawYaw.get());
+            Angle Pitch_ = rawPitch.get();
+
+
+        
 
 
 
-    );
 
-}
+
+
+
+
+    }
+
+ 
+
+
+
+
+
+
+
+ );
+
+
+
+
+ }
+
+
+
+
+
+
+
 }

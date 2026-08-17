@@ -42,7 +42,7 @@ public class Robot extends LoggedRobot {
 
     //This will build and auto in the start to make pathplanner run faster
     // DO THIS AFTER CONFIGURATION OF YOUR DESIRED PATHFINDER
-    PathfindingCommand.warmupCommand().schedule();
+    //PathfindingCommand.warmupCommand().schedule();
   }
 
   @Override

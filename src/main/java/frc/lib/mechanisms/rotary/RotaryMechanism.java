@@ -43,12 +43,7 @@ public abstract class RotaryMechanism<T extends MotorIO, E extends AbsoluteEncod
             Angle maxAngle,
             Angle startingAngle,
             RotaryAxis axis) {
-
-        public RotaryMechCharacteristics(Translation3d translation3d, Distance armLength2, Angle minAngle2,
-                Angle maxAngle2, Angle startingAngle2) {
-            //TODO Auto-generated constructor stub
-        }}
-
+            }
     protected final AbsoluteEncoderInputsAutoLogged absoluteEncoderInputs =
             new AbsoluteEncoderInputsAutoLogged();
     protected final Optional<E> absoluteEncoder;

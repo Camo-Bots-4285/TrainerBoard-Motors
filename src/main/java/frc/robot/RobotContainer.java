@@ -20,6 +20,7 @@ import frc.lib.mechanisms.flywheel.FlywheelMechanism;
 import frc.robot.Constants.DoubleMotorConstants;
 import frc.robot.Constants.SingleMotorConstants;
 import frc.robot.Constants.IntakeConstants.IntakeOptions;
+import frc.robot.Constants.Shooter_Flywheel_Constants;
 import frc.robot.HumanInterface.CoDriver;
 import frc.robot.HumanInterface.Driver;
 import frc.robot.HumanInterface.ElasticDisplay;
@@ -29,7 +30,7 @@ import frc.robot.subsystems.Motors;
 import frc.robot.subsystems.SingleMotor;
 import frc.robot.subsystems.Turret;
 import frc.robot.subsystems.Intake;
-
+import frc.robot.subsystems.Shooter;
 
 
 @SuppressWarnings("unused")
@@ -53,7 +54,7 @@ public class RobotContainer {
     //private final DoubleMotor m_doubleMotor = new DoubleMotor(DoubleMotorConstants.getDoubleMotorIO());
 
     //private final Intake m_intake = new Intake(SingleMotorConstants.getSingleMotorIO(), DoubleMotorConstants.getDoubleMotorIO());
-    //private final Intake m_intake = new Intake(SingleMotorConstants.getSingleMotorIO(), new FlywheelMechanism<>("NAME", new MotorIO(){}) {});
+    private final Shooter m_Shooter = new Shooter(Shooter_Flywheel_Constants.getMinionIO());
     private final Turret m_Turret = new Turret(SingleMotorConstants.getSingleMotorIO(), DoubleMotorConstants.getDoubleMotorIO());
     //private final ArmSubsytem m_FlyWheel = new ArmSubsytem();
     //private final Motors m_motor = new Motors();
@@ -110,11 +111,11 @@ public class RobotContainer {
     //    btn_5.whileTrue(m_intake.setPoint(Degrees.of(90)));
     //    btn_8.whileTrue(m_intake.setPoint(Degrees.of(-90)));
 
-    //     btn_4.whileTrue(m_intake.setSetpoint(IntakeOptions.INTAKE));
+        btn_4.whileTrue(m_Shooter.setFire(()-> RotationsPerSecond.of(40) ));
     //     btn_3.whileTrue(m_intake.setSetpoint(IntakeOptions.UNJAM));
     //     btn_2.whileTrue(m_intake.setSetpoint(IntakeOptions.MIDDLE));
         //btn_1.whileTrue(m_intake.setSetpoint(IntakeOptions.STOP));
-m_Turret.setDefaultCommand(m_Turret.setAim(()-> Degrees.of(0),()-> Degrees.of(0)));
+//m_Turret.setDefaultCommand(m_Turret.setAim(()-> Degrees.of(0),()-> Degrees.of(0)));
 
     }
 
