@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.lib.io.motor.MotorIO;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
 import frc.robot.Constants.DoubleMotorConstants;
+import frc.robot.Constants.Shooter_Flywheel_Constants;
 import frc.robot.Constants.SingleMotorConstants;
 import frc.robot.Constants.IntakeConstants.IntakeOptions;
 import frc.robot.Constants.Shooter_Flywheel_Constants;
@@ -27,6 +28,7 @@ import frc.robot.HumanInterface.ElasticDisplay;
 import frc.robot.HumanInterface.StateMachine.StateManager;
 import frc.robot.subsystems.DoubleMotor;
 import frc.robot.subsystems.Motors;
+import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.SingleMotor;
 import frc.robot.subsystems.Turret;
 import frc.robot.subsystems.Intake;
@@ -53,9 +55,9 @@ public class RobotContainer {
     //private final SingleMotor m_singleMotor = new SingleMotor(SingleMotorConstants.getSingleMotorIO());
     //private final DoubleMotor m_doubleMotor = new DoubleMotor(DoubleMotorConstants.getDoubleMotorIO());
 
-    //private final Intake m_intake = new Intake(SingleMotorConstants.getSingleMotorIO(), DoubleMotorConstants.getDoubleMotorIO());
     private final Shooter m_Shooter = new Shooter(Shooter_Flywheel_Constants.getMinionIO());
-    private final Turret m_Turret = new Turret(SingleMotorConstants.getSingleMotorIO(), DoubleMotorConstants.getDoubleMotorIO());
+    //private final Intake m_intake = new Intake(SingleMotorConstants.getSingleMotorIO(), new FlywheelMechanism<>("NAME", new MotorIO(){}) {});
+    //private final Turret m_Turret = new Turret(SingleMotorConstants.getSingleMotorIO(), DoubleMotorConstants.getDoubleMotorIO(),Shooter_Flywheel_Constants.getMinionIO());
     //private final ArmSubsytem m_FlyWheel = new ArmSubsytem();
     //private final Motors m_motor = new Motors();
 
@@ -98,7 +100,7 @@ public class RobotContainer {
 
         //m_singleMotor.setDefaultCommand(m_singleMotor.setSetpoint(Rotation.of(1)));
         
-        
+
         //m_singleMotor.setDefaultCommand(m_singleMotor.setVelocity(SingleMotorConstants.Setpoint.STOP));
         //m_doubleMotor.setDefaultCommand(m_doubleMotor.setSetpoint(DoubleMotorConstants.DEFAULT_SETPOINT));
 
@@ -111,12 +113,13 @@ public class RobotContainer {
     //    btn_5.whileTrue(m_intake.setPoint(Degrees.of(90)));
     //    btn_8.whileTrue(m_intake.setPoint(Degrees.of(-90)));
 
-        btn_4.whileTrue(m_Shooter.setFire(()-> RotationsPerSecond.of(40) ));
+      //  btn_4.whileTrue(m_Shooter.setFire(()-> RotationsPerSecond.of(40) ));
     //     btn_3.whileTrue(m_intake.setSetpoint(IntakeOptions.UNJAM));
     //     btn_2.whileTrue(m_intake.setSetpoint(IntakeOptions.MIDDLE));
         //btn_1.whileTrue(m_intake.setSetpoint(IntakeOptions.STOP));
 //m_Turret.setDefaultCommand(m_Turret.setAim(()-> Degrees.of(0),()-> Degrees.of(0)));
-
+        btn_4.whileTrue(m_Shooter.setFirebob());
+ m_Shooter.setDefaultCommand(m_Shooter.SetIdle());
     }
 
     /**

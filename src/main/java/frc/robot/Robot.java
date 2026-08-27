@@ -9,6 +9,8 @@ import org.littletonrobotics.junction.Logger;
 
 import com.pathplanner.lib.commands.PathfindingCommand;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -26,6 +28,8 @@ public class Robot extends LoggedRobot {
  public double teleOpStartTime;
  public double teleOpTime;
  private  RobotContainer m_robotContainer;
+
+ public Pose2d robotPose = new Pose2d(0,5,Rotation2d.fromDegrees(0));
 
   @Override
   public void robotInit() {
@@ -51,6 +55,9 @@ public class Robot extends LoggedRobot {
     CommandScheduler.getInstance().run(); 
 
     Logger.recordOutput("Robot/Time", Timer.getMatchTime());
+
+    robotPose = new Pose2d(5*Math.sin(Timer.getFPGATimestamp()/5),5*Math.cos(Timer.getFPGATimestamp()/5), Rotation2d.fromDegrees(robotPose.getRotation().getDegrees() /*+ Math.random()-0.25*/));
+    Logger.recordOutput("Robot/Pose2d", robotPose);
 
   }
 
